@@ -1,10 +1,12 @@
 import pygame
 import sys
-from functions import load_settings, load_image
+import menu
+from functions import load_settings, load_image, update_settings
+from objects import Button
 
 
 class SettingsApp:
-    CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT = load_settings()
+    fps, CURR_VOLUME, width, height, min_width, min_height = load_settings()
     # Цвета
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
@@ -20,17 +22,18 @@ class SettingsApp:
     def __init__(self, parent=None):
         if parent is None:
             pygame.init()
-            self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+            self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         else:
             self.screen = parent
-            self.WIDTH, self.HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
+            self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         pygame.display.set_caption('Card-chests v1.0 — Settings')
 
         self.background = load_image('background_folder.jpg')
         self.font = pygame.font.Font(None, 36)
         self.small_font = pygame.font.Font(None, 24)
+        self.curr_fps = self.fps
 
-        self.slider_circle_x = self.slider_x + int((self.CURR_FPS - 30) / 120 * self.slider_width)
+        self.slider_circle_x = self.slider_x + int((self.curr_fps - 30) / 120 * self.slider_width)
         self.dragging = False
 
     @staticmethod
@@ -41,43 +44,65 @@ class SettingsApp:
         screen.blit(text_surface, text_rect)
 
     def run(self):
-        running = True
-        while running:
-            self.screen.blit(self.background, (0, 0))
+        titles = ['SAVE', 'BACK']
+        buttons = []
+        w, h = 0.2 * self.width, 0.1 * self.height
+        button_x, button_y = 0.9 * (self.width - w * len(titles)), 0.95 * (self.height - h)
+        for i in range(len(titles)):
+            buttons.append(Button(x=button_x + i * (w + 0.2 * w), y=button_y, image_name='green_button.jpg',
+                                  width=w, height=h, text=titles[i], volume=self.CURR_VOLUME, screen_width=self.width,
+                                  sound_name='click1.ogg'))
 
-            # Обработка событий
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+        while True:
+            self.screen.blit(self.background, (0, 0))
+            for ev in pygame.event.get():
+                if ev.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif ev.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if self.slider_circle_x - self.slider_circle_radius <= mouse_x <= self.slider_circle_x + \
                             self.slider_circle_radius and \
                             self.slider_y <= mouse_y <= self.slider_y + self.slider_height:
                         self.dragging = True
-                elif event.type == pygame.MOUSEBUTTONUP:
+                elif ev.type == pygame.MOUSEBUTTONUP:
                     self.dragging = False
-                elif event.type == pygame.MOUSEMOTION and self.dragging:
+                elif ev.type == pygame.VIDEORESIZE:
+                    if ev.w < self.min_width:
+                        self.width = self.min_width
+                    else:
+                        self.width = ev.w
+                    if ev.h < self.min_height:
+                        self.height = self.min_height
+                    else:
+                        self.height = ev.h
+                    self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                elif ev.type == pygame.MOUSEMOTION and self.dragging:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     self.slider_circle_x = min(max(mouse_x, self.slider_x), self.slider_x + self.slider_width)
-                    self.CURR_FPS = int(((self.slider_circle_x - self.slider_x) / self.slider_width) * 120 + 30)
+                    self.curr_fps = int(((self.slider_circle_x - self.slider_x) / self.slider_width) * 120 + 30)
+                elif ev.type == pygame.USEREVENT:
+                    if ev.button.text == "BACK":
+                        menu.main_window(fps=self.fps, volume=self.CURR_VOLUME, min_width=self.min_width,
+                                         min_height=self.min_height, width=self.width, height=self.height,
+                                         parent=self.screen)
+                    elif ev.button.text == "SAVE":
+                        self.fps = self.curr_fps
+                        update_settings(fps_update=self.curr_fps)
+                for button in buttons:
+                    button.handle_event(ev)
 
-            # Отображение текста о выбранном FPS и других параметрах
+            for button in buttons:
+                button.hovered_checker(pygame.mouse.get_pos())
+                button.draw(self.screen)
             self.draw_text(self.screen, "Настройки", self.font, self.BLACK, 10, 10)
-            self.draw_text(self.screen, f"FPS: {self.CURR_FPS}", self.small_font, self.BLACK, 20, 60)
+            self.draw_text(self.screen, f"FPS: {self.curr_fps}", self.small_font, self.BLACK, 20, 60)
 
-            # Отображение слайдера
             pygame.draw.rect(self.screen, self.GRAY, (self.slider_x, self.slider_y, self.slider_width,
                                                       self.slider_height))
             pygame.draw.circle(self.screen, self.BLACK, (self.slider_circle_x, self.slider_y + self.slider_height // 2),
                                self.slider_circle_radius)
-
-            # Обновление экрана
             pygame.display.flip()
-
-        # Выход из приложения
-        pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":

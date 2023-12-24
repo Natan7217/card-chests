@@ -35,14 +35,15 @@ def load_sound(name) -> Optional[Union[pygame.mixer.Sound, None]]:
         return sound
 
 
-def load_settings() -> tuple[int, int, int, int]:
+def load_settings() -> tuple[int, int, int, int, int, int]:
     base_screen_width, base_screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
     with open("config/settings.json") as file:
         file = json.load(file)
         fps = file["CURR_FPS"]
         volume = file["CURR_VOLUME"]
         screen_width, screen_height = file["SCREEN_WIDTH"], file["SCREEN_HEIGHT"]
-    return fps, volume, base_screen_width * screen_width, base_screen_height * screen_height
+        min_width, min_height = file["MIN_WIDTH"], file["MIN_HEIGHT"]
+    return fps, volume, base_screen_width * screen_width, base_screen_height * screen_height, min_width, min_height
 
 
 def update_settings(fps_update=None, volume_update=None):

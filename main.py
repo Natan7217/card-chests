@@ -3,5 +3,5 @@ from functions import load_settings
 
 
 if __name__ == '__main__':
-    CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT = load_settings()
-    main_window(CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT)
+    CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT = load_settings()
+    main_window(CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT)
