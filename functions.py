@@ -1,12 +1,13 @@
 import os
 import pygame
 import json
+from typing import Optional, Union
 
 
 pygame.init()
 
 
-def load_image(name, colorkey=None):
+def load_image(name, color_key=None) -> Optional[Union[pygame.Surface, None]]:
     fullname = os.path.join('images', name)
     try:
         image = pygame.image.load(fullname).convert()
@@ -14,26 +15,27 @@ def load_image(name, colorkey=None):
         print('Cannot open image', e)
         return None
 
-    if colorkey is not None:
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
+    if color_key is not None:
+        if color_key == -1:
+            color_key = image.get_at((0, 0))
+        image.set_colorkey(color_key)
     else:
         image = image.convert_alpha()
     return image
 
 
-def load_sound(name):
+def load_sound(name) -> Optional[Union[pygame.mixer.Sound, None]]:
     fullname = os.path.join('sounds', name)
     try:
         sound = pygame.mixer.Sound(fullname)
     except pygame.error as e:
         print('Cannot open sound', e)
+        return None
     else:
         return sound
 
 
-def load_settings():
+def load_settings() -> tuple[int, int, int, int]:
     base_screen_width, base_screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
     with open("config/settings.json") as file:
         file = json.load(file)
