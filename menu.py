@@ -6,9 +6,9 @@ import settings
 
 
 class MenuApp:
-    fps, curr_volume, width, height, min_width, min_height = load_settings()
 
     def __init__(self, parent=None):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         if parent is None:
             pygame.init()
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
@@ -48,6 +48,7 @@ class MenuApp:
                                    self.button_width, self.button_height)
 
     def run(self):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         while True:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
