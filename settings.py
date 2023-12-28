@@ -32,6 +32,8 @@ class SettingsApp:
         self.font = pygame.font.Font(None, 36)
         self.small_font = pygame.font.Font(None, 24)
         self.curr_fps = self.fps
+        self.titles = ['SAVE', 'BACK']
+        self.buttons = []
 
         self.slider_circle_x = self.slider_x + int((self.curr_fps - 30) / 120 * self.slider_width)
         self.dragging = False
@@ -43,15 +45,21 @@ class SettingsApp:
         text_rect.topleft = (x, y)
         screen.blit(text_surface, text_rect)
 
-    def run(self):
-        titles = ['SAVE', 'BACK']
-        buttons = []
+    def buttons_update(self):
         w, h = 0.2 * self.width, 0.1 * self.height
-        button_x, button_y = 0.9 * (self.width - w * len(titles)), 0.95 * (self.height - h)
-        for i in range(len(titles)):
-            buttons.append(Button(x=button_x + i * (w + 0.2 * w), y=button_y, image_name='green_button.jpg',
-                                  width=w, height=h, text=titles[i], volume=self.curr_volume, screen_width=self.width,
-                                  sound_name='click1.ogg'))
+        button_x, button_y = 0.9 * (self.width - w * len(self.titles)), 0.95 * (self.height - h)
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        for i in range(len(self.titles)):
+            self.buttons[i].update(self.screen, button_x + i * (w + 0.2 * w), button_y, w, h)
+
+    def run(self):
+        w, h = 0.2 * self.width, 0.1 * self.height
+        button_x, button_y = 0.9 * (self.width - w * len(self.titles)), 0.95 * (self.height - h)
+        for i in range(len(self.titles)):
+            self.buttons.append(Button(x=button_x + i * (w + 0.2 * w), y=button_y, image_name='green_button.jpg',
+                                       width=w, height=h, text=self.titles[i], volume=self.curr_volume,
+                                       screen_width=self.width,
+                                       sound_name='click1.ogg'))
 
         while True:
             self.screen.blit(self.background, (0, 0))
@@ -76,7 +84,7 @@ class SettingsApp:
                         self.height = self.min_height
                     else:
                         self.height = ev.h
-                    self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                    self.buttons_update()
                 elif ev.type == pygame.MOUSEMOTION and self.dragging:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     self.slider_circle_x = min(max(mouse_x, self.slider_x), self.slider_x + self.slider_width)
@@ -88,10 +96,10 @@ class SettingsApp:
                     elif ev.button.text == "SAVE":
                         self.fps = self.curr_fps
                         update_settings(fps_update=self.curr_fps)
-                for button in buttons:
+                for button in self.buttons:
                     button.handle_event(ev)
 
-            for button in buttons:
+            for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
             self.draw_text(self.screen, "Настройки", self.font, self.BLACK, 10, 10)
