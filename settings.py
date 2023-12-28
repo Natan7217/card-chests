@@ -6,7 +6,7 @@ from objects import Button
 
 
 class SettingsApp:
-    fps, CURR_VOLUME, width, height, min_width, min_height = load_settings()
+    fps, curr_volume, width, height, min_width, min_height = load_settings()
     # Цвета
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
@@ -50,7 +50,7 @@ class SettingsApp:
         button_x, button_y = 0.9 * (self.width - w * len(titles)), 0.95 * (self.height - h)
         for i in range(len(titles)):
             buttons.append(Button(x=button_x + i * (w + 0.2 * w), y=button_y, image_name='green_button.jpg',
-                                  width=w, height=h, text=titles[i], volume=self.CURR_VOLUME, screen_width=self.width,
+                                  width=w, height=h, text=titles[i], volume=self.curr_volume, screen_width=self.width,
                                   sound_name='click1.ogg'))
 
         while True:
@@ -83,7 +83,8 @@ class SettingsApp:
                     self.curr_fps = int(((self.slider_circle_x - self.slider_x) / self.slider_width) * 120 + 30)
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == "BACK":
-                        menu.MenuApp(parent=self.screen)
+                        menu_app = menu.MenuApp(parent=self.screen)
+                        menu_app.run()
                     elif ev.button.text == "SAVE":
                         self.fps = self.curr_fps
                         update_settings(fps_update=self.curr_fps)

@@ -6,7 +6,7 @@ import settings
 
 
 class MenuApp:
-    fps, CURR_VOLUME, width, height, min_width, min_height = load_settings()
+    fps, curr_volume, width, height, min_width, min_height = load_settings()
 
     def __init__(self, parent=None):
         if parent is None:
@@ -26,7 +26,7 @@ class MenuApp:
             self.buttons.append(Button(x=self.button_x,
                                        y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
                                        image_name='green_button.jpg', width=self.button_width,
-                                       height=self.button_height, text=self.titles[i], volume=self.CURR_VOLUME,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width, sound_name='click1.ogg'))
         self.buttons_update(self.width, self.height)
         self.background = load_image('background_folder.jpg')
