@@ -83,9 +83,7 @@ class SettingsApp:
                     self.curr_fps = int(((self.slider_circle_x - self.slider_x) / self.slider_width) * 120 + 30)
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == "BACK":
-                        menu.main_window(fps=self.fps, volume=self.CURR_VOLUME, min_width=self.min_width,
-                                         min_height=self.min_height, width=self.width, height=self.height,
-                                         parent=self.screen)
+                        menu.MenuApp(parent=self.screen)
                     elif ev.button.text == "SAVE":
                         self.fps = self.curr_fps
                         update_settings(fps_update=self.curr_fps)

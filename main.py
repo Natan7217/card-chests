@@ -1,7 +1,6 @@
-from menu import main_window
-from functions import load_settings
+from menu import MenuApp
 
 
 if __name__ == '__main__':
-    CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT = load_settings()
-    main_window(CURR_FPS, CURR_VOLUME, WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT)
+    app = MenuApp()
+    app.run()
