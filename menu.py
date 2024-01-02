@@ -16,6 +16,10 @@ class MenuApp:
         else:
             self.screen = parent
             self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        if pygame.mixer.music.get_busy() is False:
+            pygame.mixer.music.load('./music/main_menu_music.wav')
+            pygame.mixer.music.set_volume(0.05 * self.curr_volume / 100)
+            pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
         self.clock = pygame.time.Clock()
         self.titles = ['PLAY', "SCORE", 'SETTINGS', 'EXIT']

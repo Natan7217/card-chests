@@ -86,7 +86,6 @@ class StartApp:
                 text = self.text_input.handle_event(ev)
                 if text is not None:
                     self.username = text
-                    print(self.username)
             self.screen.blit(self.background, (0, 0))
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())

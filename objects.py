@@ -1,6 +1,4 @@
 import sys
-import time
-
 import pygame
 from functions import load_image, load_sound, load_settings
 
@@ -46,7 +44,7 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
             if self.sound:
-                self.sound.set_volume(self.volume)
+                self.sound.set_volume(self.volume / 100)
                 self.sound.play()
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
 
@@ -72,7 +70,8 @@ class TextInput:
                      else self.text)
         self.counter = self.counter if self.counter < 100 else 0
 
-        text_surface = font.render(self.text, True, 'black')
+        text_surface = font.render(self.text[:11] if len(self.text) <= 11 else self.text[len(self.text) - 11:],
+                                   True, 'black')
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
@@ -103,13 +102,11 @@ class TextInput:
         return None
 
 
-class LoadingScreen:  # RED FLAG
-    def __init__(self, asleep=-1, parent=None, titles=None, image_name='background_folder.jpg'):
-        if titles is None:
-            self.titles = ['Press any button to continue']
-        else:
-            self.titles = titles + ['Press any button to continue']
+class LoadingScreen:
+    def __init__(self, key_flag=True, asleep=-1, parent=None, titles=None, image_name='loading_screen.jpg'):
+        self.titles = [] if titles is None else titles
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.key_flag = key_flag
         if parent is None:
             pygame.init()
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
@@ -120,7 +117,7 @@ class LoadingScreen:  # RED FLAG
         self.time = asleep
         self.background = pygame.transform.scale(load_image(image_name), (self.width, self.height))
         self.rect = self.background.get_rect(topleft=(0, 0))
-        self.font_size = int(0.03 * self.width)
+        self.font_size = int(0.07 * self.width)
         self.clock = pygame.time.Clock()
 
     def updates(self, width, height):
@@ -131,7 +128,7 @@ class LoadingScreen:  # RED FLAG
             self.height = self.min_height
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-        self.font_size = int(0.03 * self.width)
+        self.font_size = int(0.07 * self.width)
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))
@@ -149,20 +146,18 @@ class LoadingScreen:  # RED FLAG
                 if ev.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif ev.type == pygame.KEYDOWN:
-                    print('HEHE')
-                    self.time = -1
+                elif ev.type == pygame.KEYDOWN or ev.type == pygame.MOUSEBUTTONDOWN:
+                    if self.key_flag:
+                        self.time = 0
                 elif ev.type == pygame.VIDEORESIZE:
                     self.updates(ev.w, ev.h)
             self.draw()
             if self.time > 0:
-                print(self.time)
                 delta_time = pygame.time.get_ticks() / 1000
                 self.time -= delta_time - ellapsed_time
                 ellapsed_time = delta_time
             if -1 < self.time <= 0:
-                self.exit()
-                break
+                return self.exit()
             pygame.display.flip()
             self.clock.tick(self.fps)
 
@@ -176,7 +171,7 @@ class MouseChecking:
         :param objects:
         The MouseChecking class to check the location of the mouse to change the cursor.
 
-        When called, it accepts list of objects in the screen and returns nothing.
+        When called, it accepts a list of objects in the screen and returns nothing.
         """
         self.dict_cursors = {"Button": pygame.SYSTEM_CURSOR_HAND, "TextInput": pygame.SYSTEM_CURSOR_IBEAM,
                              "DEFAULT": pygame.SYSTEM_CURSOR_ARROW, "Scroll": pygame.SYSTEM_CURSOR_SIZEWE}
