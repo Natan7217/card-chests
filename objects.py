@@ -1,4 +1,5 @@
 import sys
+import time
 
 import pygame
 from functions import load_image, load_sound, load_settings
@@ -60,18 +61,16 @@ class TextInput:
         self.rect = self.image.get_rect(topleft=(x, y))
         self.counter = 0
         self.text_input_flag = False
+        self.is_hovered = False
 
     def draw(self, surface):
         self.counter += 1
         surface.blit(self.image, self.rect.topleft)
         font = pygame.font.Font(None, int(0.03 * self.screen_width))
-        if self.text_input_flag and self.counter < 60:
-            if '|' in self.text:
-                self.text = self.text.replace('|', '')
-            else:
-                self.text += '|'
-        else:
-            self.counter = 0
+        self.text = (self.text.replace('|', '') if self.text_input_flag and self.counter == 5 and '|' in self.text
+                     else self.text + "|" if self.text_input_flag and self.counter < 5 and '|' not in self.text
+                     else self.text)
+        self.counter = self.counter if self.counter < 100 else 0
 
         text_surface = font.render(self.text, True, 'black')
         text_rect = text_surface.get_rect(center=self.rect.center)
@@ -92,12 +91,15 @@ class TextInput:
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text.replace('|', '')
                 self.text = self.text[:-1]
+                self.text += "|"
             elif event.key == pygame.K_RETURN:
                 self.text = self.text.replace('|', '')
                 self.text_input_flag = False
                 return self.text
             else:
+                self.text = self.text.replace('|', '')
                 self.text += event.unicode
+                self.text += "|"
         return None
 
 
@@ -166,3 +168,26 @@ class LoadingScreen:  # RED FLAG
 
     def exit(self):
         return self.screen
+
+
+class MouseChecking:
+    def __init__(self, objects: list):
+        """
+        :param objects:
+        The MouseChecking class to check the location of the mouse to change the cursor.
+
+        When called, it accepts list of objects in the screen and returns nothing.
+        """
+        self.dict_cursors = {"Button": pygame.SYSTEM_CURSOR_HAND, "TextInput": pygame.SYSTEM_CURSOR_IBEAM,
+                             "DEFAULT": pygame.SYSTEM_CURSOR_ARROW, "Scroll": pygame.SYSTEM_CURSOR_SIZEWE}
+        self.objects = objects
+
+    def hovered_checker(self, mouse_pos):
+        for obj in self.objects:
+            if obj[1].collidepoint(mouse_pos):
+                pygame.mouse.set_cursor(self.dict_cursors[obj[0]])
+                return
+        pygame.mouse.set_cursor(self.dict_cursors["DEFAULT"])
+
+    def change_objects(self, obj: list):
+        self.objects = obj

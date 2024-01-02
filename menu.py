@@ -1,7 +1,7 @@
 import pygame
 import sys
 from functions import load_settings, load_image
-from objects import Button, LoadingScreen
+from objects import Button, LoadingScreen, MouseChecking
 import settings
 import game_start
 
@@ -20,6 +20,7 @@ class MenuApp:
         self.clock = pygame.time.Clock()
         self.titles = ['PLAY', "SCORE", 'SETTINGS', 'EXIT']
         self.buttons = []
+        self.objects = []
         self.button_width, self.button_height = 0.2 * self.width, 0.1 * self.height
         self.button_x, self.button_y = ((self.width - self.button_width) / 2,
                                         (self.height - self.button_height * len(self.titles)) / 2)
@@ -29,11 +30,14 @@ class MenuApp:
                                        image_name='green_button.jpg', width=self.button_width,
                                        height=self.button_height, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width, sound_name='click1.ogg'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.mouse_checking = MouseChecking(self.objects)
         self.background = pygame.transform.scale(load_image('background_folder.jpg'), (self.width, self.height))
         self.buttons_update(self.width, self.height)
         self.curr_fps = self.fps
 
     def buttons_update(self, width, height):
+        self.objects = []
         self.width, self.height = width, height
         if width < self.min_width:
             self.width = self.min_width
@@ -48,6 +52,8 @@ class MenuApp:
             self.buttons[i].update(self.screen, self.button_x,
                                    self.button_y + i * (self.button_height + 0.2 * self.button_height),
                                    self.button_width, self.button_height)
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.mouse_checking.change_objects(self.objects)
 
     def run(self):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
@@ -78,6 +84,7 @@ class MenuApp:
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
+            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.clock.tick(self.fps)
             pygame.display.flip()
 

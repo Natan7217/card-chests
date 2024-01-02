@@ -2,7 +2,7 @@ import pygame
 import sys
 import menu
 from functions import load_settings, load_image, update_settings
-from objects import Button
+from objects import Button, MouseChecking
 
 
 class SettingsApp:
@@ -49,9 +49,17 @@ class SettingsApp:
         self.curr_fps = self.fps
         self.titles = ['SAVE', 'BACK']
         self.buttons = []
+        self.objects = []
+        self.volume_slider_rect = pygame.rect.Rect(self.volume_slider_x, self.volume_slider_y,
+                                                   self.volume_slider_width, self.volume_slider_height)
+        self.fps_slider_rect = pygame.rect.Rect(self.fps_slider_x, self.fps_slider_y,
+                                                self.fps_slider_width, self.fps_slider_height)
+        self.objects.append(("Scroll", self.volume_slider_rect))
+        self.objects.append(("Scroll", self.fps_slider_rect))
 
         self.slider_circle_x = self.fps_slider_x + int((self.curr_fps - 30) / 120 * self.fps_slider_width)
         self.dragging = False
+        self.mouse_checking = MouseChecking(self.objects)
 
     @staticmethod
     def draw_text(screen, text, font, color, x, y):
@@ -61,11 +69,16 @@ class SettingsApp:
         screen.blit(text_surface, text_rect)
 
     def buttons_update(self):
+        self.objects = []
         w, h = 0.2 * self.width, 0.1 * self.height
         button_x, button_y = 0.9 * (self.width - w * len(self.titles)), 0.95 * (self.height - h)
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         for i in range(len(self.titles)):
             self.buttons[i].update(self.screen, button_x + i * (w + 0.2 * w), button_y, w, h)
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.objects.append(("Scroll", self.volume_slider_rect))
+        self.objects.append(("Scroll", self.fps_slider_rect))
+        self.mouse_checking.change_objects(self.objects)
 
     def run(self):
         w, h = 0.2 * self.width, 0.1 * self.height
@@ -75,6 +88,8 @@ class SettingsApp:
                                        width=w, height=h, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width,
                                        sound_name='click1.ogg'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.mouse_checking.change_objects(self.objects)
 
         while True:
             self.screen.blit(self.background, (0, 0))
@@ -136,6 +151,7 @@ class SettingsApp:
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
+            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.draw_text(self.screen, "Настройки", self.font, self.BLACK, 10, 10)
             self.draw_text(self.screen, f"FPS: {self.curr_fps}", self.small_font, self.BLACK, 20, 60)
             self.draw_text(self.screen, f"Vol: {self.curr_volume}", self.small_font, self.BLACK, 20, 160)

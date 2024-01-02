@@ -2,7 +2,7 @@ import pygame
 import sys
 import menu
 from functions import load_settings, load_image
-from objects import Button, TextInput
+from objects import Button, TextInput, MouseChecking
 
 
 class StartApp:
@@ -21,6 +21,8 @@ class StartApp:
 
         self.titles = ['START', 'BACK']
         self.buttons = []
+        self.objects = []
+        self.mouse_checking = MouseChecking(self.objects)
         self.button_width, self.button_height = 0.2 * self.width, 0.1 * self.height
         self.button_x, self.button_y = (0.9 * (self.width - self.button_width * len(self.titles)),
                                         0.95 * (self.height - self.button_height))
@@ -30,9 +32,11 @@ class StartApp:
 
         self.text_input = TextInput(x=self.text_x, y=self.text_y, width=self.text_width, height=self.text_height,
                                     image_name='text_input.jpg', screen_width=self.width)
+        self.objects.append((self.text_input.__class__.__name__, self.text_input.rect))
         self.username = ''
 
     def updates(self, width, height):
+        self.objects = []
         self.width, self.height = width, height
         if width < self.min_width:
             self.width = self.min_width
@@ -47,9 +51,12 @@ class StartApp:
         self.text_width, self.text_height = 0.4 * self.width, 0.075 * self.height
         self.text_input.update(new_text_x=self.text_x, new_text_y=self.text_y,
                                new_w=self.text_width, new_h=self.text_height)
+        self.objects.append((self.text_input.__class__.__name__, self.text_input.rect))
         for i in range(len(self.titles)):
             self.buttons[i].update(self.screen, self.button_x + i * (self.button_width + 0.2 * self.button_width),
                                    self.button_y, self.button_width, self.button_height)
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.mouse_checking.change_objects(self.objects)
 
     def run(self):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
@@ -58,6 +65,8 @@ class StartApp:
                                        y=self.button_y, image_name='green_button.jpg', width=self.button_width,
                                        height=self.button_height, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width, sound_name='click1.ogg'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+        self.mouse_checking.change_objects(self.objects)
         while True:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
@@ -82,6 +91,7 @@ class StartApp:
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
+            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.text_input.draw(self.screen)
             self.clock.tick(self.fps)
             pygame.display.flip()
