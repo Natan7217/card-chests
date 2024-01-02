@@ -1,8 +1,9 @@
 import pygame
 import sys
 from functions import load_settings, load_image
-from objects import Button
+from objects import Button, LoadingScreen
 import settings
+import game_start
 
 
 class MenuApp:
@@ -28,8 +29,8 @@ class MenuApp:
                                        image_name='green_button.jpg', width=self.button_width,
                                        height=self.button_height, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width, sound_name='click1.ogg'))
+        self.background = pygame.transform.scale(load_image('background_folder.jpg'), (self.width, self.height))
         self.buttons_update(self.width, self.height)
-        self.background = load_image('background_folder.jpg')
         self.curr_fps = self.fps
 
     def buttons_update(self, width, height):
@@ -38,6 +39,7 @@ class MenuApp:
             self.width = self.min_width
         if height < self.min_height:
             self.height = self.min_height
+        self.background = pygame.transform.scale(self.background, (self.width, self.height))
         self.button_width, self.button_height = 0.2 * self.width, 0.1 * self.height
         self.button_x, self.button_y = ((self.width - self.button_width) / 2,
                                         (self.height - self.button_height * len(self.titles)) / 2)
@@ -63,12 +65,13 @@ class MenuApp:
                         pygame.quit()
                         sys.exit()
                     elif ev.button.text == "SETTINGS":
-                        settings_app = settings.SettingsApp(self.screen)
+                        settings_app = settings.SettingsApp(parent=self.screen)
                         settings_app.run()
                     elif ev.button.text == "SCORE":
                         pass
                     else:
-                        pass
+                        game_app = game_start.StartApp(parent=self.screen)
+                        game_app.run()
                 for button in self.buttons:
                     button.handle_event(ev)
             self.screen.blit(self.background, (0, 0))

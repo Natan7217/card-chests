@@ -43,7 +43,7 @@ class SettingsApp:
         self.curr_volume_slider_x = self.volume_slider_x + int(
             (self.curr_volume - self.min_volume) / (self.max_volume - self.min_volume) * self.volume_slider_width)
 
-        self.background = load_image('background_folder.jpg')
+        self.background = pygame.transform.scale(load_image('background_folder.jpg'), (self.width, self.height))
         self.font = pygame.font.Font(None, 36)
         self.small_font = pygame.font.Font(None, 24)
         self.curr_fps = self.fps
@@ -106,6 +106,7 @@ class SettingsApp:
                         self.height = self.min_height
                     else:
                         self.height = ev.h
+                    self.background = pygame.transform.scale(self.background, (self.width, self.height))
                     self.buttons_update()
                 elif ev.type == pygame.MOUSEMOTION and self.dragging:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
