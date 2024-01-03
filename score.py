@@ -71,6 +71,9 @@ class ScoreApp:
         for button in self.buttons:
             button.hovered_checker(pygame.mouse.get_pos())
             button.draw(self.screen)
+        text_area = load_image("instruments.png")
+        text_area = pygame.transform.scale(text_area, (self.width, y))
+        self.screen.blit(text_area, (0, self.scroll_bar.y_axis), pygame.rect.Rect(0, 0, 0, 0))
         self.scroll_bar.draw(self.screen)
 
     def run(self):
@@ -95,6 +98,7 @@ class ScoreApp:
                         menu_app.run()
                 for button in self.buttons:
                     button.handle_event(ev)
+                self.scroll_bar.event_handler(ev)
             keys = pygame.key.get_pressed()
             if keys[pygame.K_DOWN]:
                 self.scroll_offset = (self.scroll_offset if self.scroll_offset + self.scroll_speed > self.height
@@ -102,6 +106,7 @@ class ScoreApp:
             elif keys[pygame.K_UP]:
                 self.scroll_offset = (self.scroll_offset if self.scroll_offset - self.scroll_speed < 0
                                       else self.scroll_offset - self.scroll_speed)
+            self.scroll_bar.update()
             self.draw()
             self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.clock.tick(self.fps)
