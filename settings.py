@@ -1,7 +1,6 @@
 import pygame
-import sys
 import menu
-from functions import load_settings, load_image, update_settings
+from functions import load_settings, load_image, update_settings, terminate
 from objects import Button, MouseChecking
 
 
@@ -95,8 +94,7 @@ class SettingsApp:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    terminate()
                 elif ev.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if self.slider_circle_x - self.fps_slider_circle_radius <= mouse_x <= self.slider_circle_x + \

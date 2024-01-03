@@ -1,7 +1,6 @@
 import pygame
-import sys
 import menu
-from functions import load_settings, load_image
+from functions import load_settings, load_image, terminate
 from objects import Button, TextInput, MouseChecking
 
 
@@ -71,8 +70,7 @@ class StartApp:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    terminate()
                 elif ev.type == pygame.VIDEORESIZE:
                     self.updates(ev.w, ev.h)
                 elif ev.type == pygame.USEREVENT:

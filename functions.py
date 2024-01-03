@@ -1,4 +1,6 @@
 import os
+import sys
+import sqlite3
 import pygame
 import json
 from typing import Optional, Union
@@ -55,3 +57,19 @@ def update_settings(fps_update=None, volume_update=None):
         data["CURR_VOLUME"] = volume_update
     with open('config/settings.json', 'w') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def load_data(queue=''):
+    try:
+        conn = sqlite3.connect('score.sqlite')
+        cur = conn.cursor()
+        data = cur.execute(queue).fetchall()
+    except Exception as e:
+        print(e)
+    else:
+        return data
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()

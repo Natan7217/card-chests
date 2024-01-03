@@ -1,9 +1,9 @@
 import pygame
-import sys
-from functions import load_settings, load_image
-from objects import Button, LoadingScreen, MouseChecking
+from functions import load_settings, load_image, terminate
+from objects import Button, MouseChecking
 import settings
 import game_start
+import score
 
 
 class MenuApp:
@@ -65,20 +65,19 @@ class MenuApp:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    terminate()
                 elif ev.type == pygame.VIDEORESIZE:
                     self.buttons_update(ev.w, ev.h)
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == "EXIT":
                         pygame.time.wait(400)
-                        pygame.quit()
-                        sys.exit()
+                        terminate()
                     elif ev.button.text == "SETTINGS":
                         settings_app = settings.SettingsApp(parent=self.screen)
                         settings_app.run()
                     elif ev.button.text == "SCORE":
-                        pass
+                        score_app = score.ScoreApp(parent=self.screen)
+                        score_app.run()
                     else:
                         game_app = game_start.StartApp(parent=self.screen)
                         game_app.run()
