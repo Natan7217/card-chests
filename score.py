@@ -1,7 +1,7 @@
 import pygame
 import menu
-from functions import load_settings, load_image, terminate
-from objects import Button, MouseChecking, ScrollBar
+from functions import load_settings, load_image, terminate, load_data
+from objects import Button, MouseChecking
 
 
 class ScoreApp:
@@ -26,15 +26,8 @@ class ScoreApp:
         self.curr_fps = self.fps
         self.scroll_offset = 0
         self.scroll_speed = 0.005 * self.width
-        self.scores_data = [("Playeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeer1", 100), ("Player2", 95), ("Player3", 85),
-                            ("Player4", 75), ("Player5", 60), ("Player6", 50),
-                            ("Player7", 40), ("Player8", 30), ("Player9", 20),
-                            ("Player10", 10), ("Player11", 8), ("Player12", 6), ("Player13", 3), ('Player14', 3),
-                            ("Player15", 3), ("Player16", 3), ('Player17', 2), ('Player18', 1)]
-        self.scroll_bar = ScrollBar(image_height=0.09 * self.height * len(self.scores_data),
-                                    screen_height=self.screen.get_height(), screen_width=self.screen.get_width())
-        print(0.09 * self.height * len(self.scores_data))
-        print(self.height)
+        queue = 'SELECT user, score FROM scores'
+        self.scores_data = load_data(queue=queue)
 
     def updates(self, width, height):
         self.objects = []
@@ -61,7 +54,7 @@ class ScoreApp:
         line_height = 0.09 * self.height
         y = 0
         for index, (username, score) in enumerate(self.scores_data):
-            text = f'{username} - {score}'
+            text = f'{index + 1}. {username} - {score}'
             if font.size(text)[0] > max_text_width:
                 text = text[:int(0.6 * len(text))] + '...'
             score_text = font.render(text, True, 'white')
@@ -71,10 +64,6 @@ class ScoreApp:
         for button in self.buttons:
             button.hovered_checker(pygame.mouse.get_pos())
             button.draw(self.screen)
-        text_area = load_image("instruments.png")
-        text_area = pygame.transform.scale(text_area, (self.width, y))
-        self.screen.blit(text_area, (0, self.scroll_bar.y_axis), pygame.rect.Rect(0, 0, 0, 0))
-        self.scroll_bar.draw(self.screen)
 
     def run(self):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
@@ -98,15 +87,19 @@ class ScoreApp:
                         menu_app.run()
                 for button in self.buttons:
                     button.handle_event(ev)
-                self.scroll_bar.event_handler(ev)
             keys = pygame.key.get_pressed()
             if keys[pygame.K_DOWN]:
-                self.scroll_offset = (self.scroll_offset if self.scroll_offset + self.scroll_speed > self.height
-                                      else self.scroll_offset + self.scroll_speed)
+                if 0.09 * self.height * len(self.scores_data) < self.height:
+                    self.scroll_offset = 0
+                else:
+                    self.scroll_offset = (self.scroll_offset if self.scroll_offset + self.scroll_speed >= self.height
+                                          else self.scroll_offset + self.scroll_speed)
             elif keys[pygame.K_UP]:
-                self.scroll_offset = (self.scroll_offset if self.scroll_offset - self.scroll_speed < 0
-                                      else self.scroll_offset - self.scroll_speed)
-            self.scroll_bar.update()
+                if 0.09 * self.height * len(self.scores_data) < self.height:
+                    self.scroll_offset = 0
+                else:
+                    self.scroll_offset = (self.scroll_offset if self.scroll_offset - self.scroll_speed < 0
+                                          else self.scroll_offset - self.scroll_speed)
             self.draw()
             self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.clock.tick(self.fps)
