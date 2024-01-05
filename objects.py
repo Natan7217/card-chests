@@ -271,11 +271,12 @@ class ScrollBar(object):
 class InGameMenu:
     def __init__(self, screen_width, screen_height):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
-        self.background = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA).get_rect()
+        self.width, self.height = screen_width, screen_height
+        self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.titles = ['CONTINUE', 'BACK TO MAIN MENU']
         self.buttons = []
         self.objects = []
-        self.button_width, self.button_height = 0.2 * screen_width, 0.1 * screen_height
+        self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height
         self.button_x, self.button_y = ((screen_width - self.button_width) / 2,
                                         (screen_height - self.button_height * len(self.titles)) / 2)
         for i in range(len(self.titles)):
@@ -286,14 +287,9 @@ class InGameMenu:
                                        screen_width=self.width, sound_name='click.wav'))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (128, 128, 128, 128), self.background)
+    def draw(self, screen: pygame.surface.Surface):
+        pygame.draw.rect(self.background, (128, 128, 128, 10), self.background.get_rect())
+        screen.blit(self.background, (0, 0))
         for i in range(len(self.titles)):
             self.buttons[i].hovered_checker(pygame.mouse.get_pos())
             self.buttons[i].draw(screen)
-
-    def return_objects(self):
-        return self.objects
-
-    def return_buttons(self):
-        return self.buttons
