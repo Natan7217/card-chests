@@ -71,8 +71,10 @@ class TextInput:
                      else self.text)
         self.counter = self.counter if self.counter < 100 else 0
 
+        color = 'black' if self.text_input_flag else 'green'
+
         text_surface = font.render(self.text[:11] if len(self.text) <= 11 else self.text[len(self.text) - 11:],
-                                   True, 'black')
+                                   True, color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
@@ -158,7 +160,7 @@ class LoadingScreen:
                 delta_time = pygame.time.get_ticks() / 1000
                 self.time -= delta_time - ellapsed_time
                 ellapsed_time = delta_time
-            if -1 < self.time <= 0:
+            if -1 != self.time and self.time <= 0:
                 return self.exit()
             pygame.display.flip()
             self.clock.tick(self.fps)
@@ -262,6 +264,36 @@ class ScrollBar(object):
 
     def draw(self, screen):
         pygame.draw.rect(screen, 'gray', self.bar_rect)
-
         screen.blit(self.bar_up_image, (self.screen_width - 20, 0))
         screen.blit(self.bar_down_image, (self.screen_width - 20, self.screen_height - 20))
+
+
+class InGameMenu:
+    def __init__(self, screen_width, screen_height):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.background = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA).get_rect()
+        self.titles = ['CONTINUE', 'BACK TO MAIN MENU']
+        self.buttons = []
+        self.objects = []
+        self.button_width, self.button_height = 0.2 * screen_width, 0.1 * screen_height
+        self.button_x, self.button_y = ((screen_width - self.button_width) / 2,
+                                        (screen_height - self.button_height * len(self.titles)) / 2)
+        for i in range(len(self.titles)):
+            self.buttons.append(Button(x=self.button_x,
+                                       y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
+                                       image_name='green_button.jpg', width=self.button_width,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
+                                       screen_width=self.width, sound_name='click.wav'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (128, 128, 128, 128), self.background)
+        for i in range(len(self.titles)):
+            self.buttons[i].hovered_checker(pygame.mouse.get_pos())
+            self.buttons[i].draw(screen)
+
+    def return_objects(self):
+        return self.objects
+
+    def return_buttons(self):
+        return self.buttons

@@ -79,7 +79,8 @@ class StartApp:
                         menu_app = menu.MenuApp(parent=self.screen)
                         menu_app.run()
                     elif ev.button.text == "START":
-                        loading_screen = LoadingScreen(asleep=10, titles=['Game loading...'], key_flag=False,
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                        loading_screen = LoadingScreen(asleep=15, titles=['Game loading...'], key_flag=False,
                                                        parent=self.screen)
                         self.screen = loading_screen.run()
                         game = city.CityApp(parent=self.screen, player=self.username)
