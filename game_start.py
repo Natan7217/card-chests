@@ -1,7 +1,8 @@
 import pygame
 import menu
 from functions import load_settings, load_image, terminate
-from objects import Button, TextInput, MouseChecking
+from objects import Button, TextInput, MouseChecking, LoadingScreen
+import city
 
 
 class StartApp:
@@ -78,7 +79,11 @@ class StartApp:
                         menu_app = menu.MenuApp(parent=self.screen)
                         menu_app.run()
                     elif ev.button.text == "START":
-                        pass
+                        loading_screen = LoadingScreen(asleep=10, titles=['Game loading...'], key_flag=False,
+                                                       parent=self.screen)
+                        self.screen = loading_screen.run()
+                        game = city.CityApp(parent=self.screen, player=self.username)
+                        game.run()
                 for button in self.buttons:
                     button.handle_event(ev)
                 text = self.text_input.handle_event(ev)

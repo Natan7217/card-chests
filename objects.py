@@ -5,16 +5,17 @@ from functions import load_image, load_sound, load_settings
 
 class Button:
     def __init__(self, x, y, width, height, text, image_name, volume, screen_width, hover_image_name=None,
-                 sound_name=None):
+                 sound_name=None, color_key=None):
         self.x, self.y, self.width, self.height, self.volume = x, y, width, height, volume
         self.screen_width = screen_width
         self.text = text
-        self.image = load_image(image_name)
+        self.image = load_image(image_name, color_key=color_key)
         self.image = pygame.transform.scale(self.image, (width, height))
         self.hover_image = self.image
         self.hover_image_name = hover_image_name
         if self.hover_image_name:
-            self.hover_image = pygame.transform.scale(load_image(self.hover_image_name), (width, height))
+            self.hover_image = pygame.transform.scale(load_image(self.hover_image_name, color_key=color_key),
+                                                      (width, height))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.sound = load_sound(sound_name) if sound_name else None
         self.is_hovered = False
@@ -114,6 +115,7 @@ class LoadingScreen:
             self.screen = parent
             self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         pygame.display.set_caption('Card-chests v1.0 — Loading')
+        pygame.mixer.music.stop()
         self.time = asleep
         self.background = pygame.transform.scale(load_image(image_name), (self.width, self.height))
         self.rect = self.background.get_rect(topleft=(0, 0))
@@ -263,4 +265,3 @@ class ScrollBar(object):
 
         screen.blit(self.bar_up_image, (self.screen_width - 20, 0))
         screen.blit(self.bar_down_image, (self.screen_width - 20, self.screen_height - 20))
-
