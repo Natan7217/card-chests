@@ -65,7 +65,6 @@ class BankApp:
             self.screen.blit(self.backgrounds[self.background], (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
-                    pygame.time.wait(500)
                     terminate()
                 elif ev.type == pygame.KEYDOWN:
                     if ev.key == pygame.K_ESCAPE:
@@ -107,7 +106,6 @@ class BankApp:
                                 menu_app = menu.MenuApp(parent=screen)
                                 menu_app.run()
                             elif ev.button.text == 'EXIT':
-                                pygame.time.wait(500)
                                 terminate()
                         for button in self.menu.buttons:
                             button.handle_event(ev)

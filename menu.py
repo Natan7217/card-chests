@@ -70,7 +70,6 @@ class MenuApp:
                     self.buttons_update(ev.w, ev.h)
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == "EXIT":
-                        pygame.time.wait(400)
                         terminate()
                     elif ev.button.text == "SETTINGS":
                         settings_app = settings.SettingsApp(parent=self.screen)

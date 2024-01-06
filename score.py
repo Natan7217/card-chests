@@ -26,8 +26,7 @@ class ScoreApp:
         self.curr_fps = self.fps
         self.scroll_offset = 0
         self.scroll_speed = 0.005 * self.width
-        self.scores_data = sorted(load_data('SELECT user, score FROM scores'), key=lambda x: x[0])
-        self.scores_data = sorted(self.scores_data, key=lambda x: x[1])
+        self.scores_data = load_data('SELECT user, score FROM scores')
 
     def updates(self, width, height):
         self.objects = []
