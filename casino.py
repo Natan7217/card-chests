@@ -14,13 +14,14 @@ class CasinoApp:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
             self.screen = parent
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.menu_flag = False
         pygame.mixer.music.load('./music/casino_soundtrack.wav')
         pygame.mixer.music.set_volume(0.03 * self.curr_volume / 100)
         pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
-        self.menu = InGameMenu(pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self.menu = InGameMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
         self.objects = []
