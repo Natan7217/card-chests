@@ -273,7 +273,7 @@ class InGameMenu:
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         self.width, self.height = screen_width, screen_height
         self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        self.titles = ['CONTINUE', 'BACK TO MAIN MENU']
+        self.titles = ['CONTINUE', 'BACK TO MAIN MENU', 'EXIT']
         self.buttons = []
         self.objects = []
         self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height

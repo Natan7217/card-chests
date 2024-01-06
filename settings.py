@@ -150,9 +150,9 @@ class SettingsApp:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
             self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
-            self.draw_text(self.screen, "Настройки", self.font, self.BLACK, 10, 10)
-            self.draw_text(self.screen, f"FPS: {self.curr_fps}", self.small_font, self.BLACK, 20, 60)
-            self.draw_text(self.screen, f"Vol: {self.curr_volume}", self.small_font, self.BLACK, 20, 160)
+            self.draw_text(self.screen, "Настройки", self.font, self.WHITE, 10, 10)
+            self.draw_text(self.screen, f"FPS: {self.curr_fps}", self.small_font, self.WHITE, 20, 60)
+            self.draw_text(self.screen, f"Vol: {self.curr_volume}", self.small_font, self.WHITE, 20, 160)
 
             pygame.draw.rect(self.screen, self.GRAY, (self.fps_slider_x, self.fps_slider_y, self.fps_slider_width,
                                                       self.fps_slider_height))

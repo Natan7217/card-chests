@@ -64,12 +64,53 @@ def load_data(queue=''):
         conn = sqlite3.connect('score.sqlite')
         cur = conn.cursor()
         data = cur.execute(queue).fetchall()
+        conn.close()
     except Exception as e:
         print(e)
     else:
         return data
 
 
+def insert_data(username, score):
+    try:
+        conn = sqlite3.connect('score.sqlite')
+        cur = conn.cursor()
+        cur.execute('INSERT INTO scores (user, score) VALUES (?, ?)', (username, score))
+        conn.commit()
+    except Exception as e:
+        print(e)
+    else:
+        return None
+
+
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def search_player_data(username=''):
+    all_data = sorted(load_data('SELECT user, score FROM scores'), key=lambda x: x[0])
+    all_data = sorted(all_data, key=lambda x: x[1])
+    usernames = [i[0] for i in all_data]
+    result = None
+    name = username
+    if name == '':
+        name = 'Player'
+        for i in range(0, 10000):
+            if name + str(i) not in usernames:
+                insert_data(name, 0)
+                result = (name, 0)
+                break
+    if name not in usernames:
+        insert_data(name, 0)
+        result = (name, 0)
+    elif name in usernames:
+        score = 0
+        for data in all_data:
+            if name == data[0]:
+                score = data[1]
+                break
+        result = (name, score)
+    if result is None:
+        terminate()  # HEHE
+    return result

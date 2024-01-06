@@ -2,11 +2,12 @@ import pygame
 from functions import load_settings, load_image, terminate
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen
 import menu
+import bank
 
 
 class CityApp:
 
-    def __init__(self, parent=None, player=None):
+    def __init__(self, parent=None, player='Battatt'):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         if parent is None:
             pygame.init()
@@ -75,19 +76,21 @@ class CityApp:
             self.screen.blit(self.background, (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
+                    pygame.time.wait(500)
                     terminate()
                 elif ev.type == pygame.VIDEORESIZE:
                     self.updates(ev.w, ev.h)
                 elif ev.type == pygame.KEYDOWN:
                     if ev.key == pygame.K_ESCAPE:
-                        pass
+                        self.menu_flag = True
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == "   ":
                         self.menu_flag = True
                     elif ev.button.text == "  ":  # CASINO
                         pass
                     elif ev.button.text == " ":  # BANK
-                        pass
+                        bank_app = bank.BankApp(player=self.player)
+                        bank_app.run()
                 for building in self.buildings:
                     building.handle_event(ev)
             for building in self.buildings:
@@ -112,6 +115,9 @@ class CityApp:
                                 screen = loading_screen.run()
                                 menu_app = menu.MenuApp(parent=screen)
                                 menu_app.run()
+                            elif ev.button.text == 'EXIT':
+                                pygame.time.wait(500)
+                                terminate()
                         for button in self.menu.buttons:
                             button.handle_event(ev)
                     for button in self.menu.buttons:
