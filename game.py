@@ -56,6 +56,10 @@ class GameApp:
         self.curr_fps = self.fps
         self.counter_for_animation = 0
         self.animation = True
+        self.tables = [pygame.transform.scale(load_image('cards_table.jpg'),
+                                              (0.8 * self.width, 0.25 * self.height)),
+                       pygame.transform.scale(load_image('cards_table_for_enemy.jpg'),
+                                              (0.35 * self.width, 0.1 * self.height))]
 
     def run(self):
         while True:
@@ -125,6 +129,8 @@ class GameApp:
                     self.crabby_cards.update()
             else:
                 self.counter_for_animation += 1
+            self.screen.blit(self.tables[0], (0.07 * self.width, 0.7 * self.height))
+            self.screen.blit(self.tables[1], (0.34 * self.width, 0.4 * self.height))
             self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.clock.tick(self.fps)
             pygame.display.flip()
