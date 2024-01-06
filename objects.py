@@ -1,5 +1,6 @@
 import sys
 import pygame
+from typing import Optional, Union, Literal
 from functions import load_image, load_sound, load_settings
 
 
@@ -247,19 +248,49 @@ class Entity(pygame.sprite.Sprite):
 
 
 class Card(pygame.sprite.Sprite):
-    def __init__(self, suit, value, x, y):
+    def __init__(self, suit, value, volume, /, x: int = 0, y: int = 0, *, width: Optional[Union[float, int]],
+                 height: Optional[Union[float, int]], persona: Literal["player", "crab"] = None):
         """ Card sprite """
         super().__init__()
         self.suit = suit
         self.value = value
-        self.image_file_name = f"cards/card{self.suit}{self.value}.png"
+        self.volume = volume
+        self.text = self.suit + self.value
+        self.width, self.height = width, height
+        self.image_file_name = f"cards/card{self.text}.png"
         self.image = load_image(self.image_file_name)
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.is_face_up = False
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.position = x, y
+        self.rect = self.image.get_rect()
+        self.is_hovered = False
+        self.persona = persona
+        self.ask_sound, self.card_sound = None, None
+
+    def set_persona(self, persona: Literal["player", "crab"]):
+        self.persona = persona
+
+    def set_sound(self):
+        if self.persona:
+            self.ask_sound = load_sound(f"{self.persona}_ask_cards.ogg")
+            self.card_sound = load_sound(f"{self.persona}_{self.value}.ogg")
 
     def update(self):
         pass
 
-    def draw(self, surface):
-        surface.blit(self.image, self.rect.topleft)
+    def hovered_checker(self, mouse_pos):
+        self.is_hovered = self.rect.collidepoint(mouse_pos)
 
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
+            if not (self.ask_sound and self.card_sound):
+                self.set_sound()
+            self.ask_sound.set_volume(self.volume / 100)
+            self.ask_sound.play()
+            pygame.time.wait(2000)
+            self.card_sound.set_volume(self.volume / 100)
+            self.card_sound.play()
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
+
+    def draw(self, surface):
+        self.rect.topleft = self.position
+        surface.blit(self.image, self.rect.topleft)

@@ -1,30 +1,32 @@
+from functions import load_image, load_settings, terminate
+from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card
 import pygame
-from functions import load_image, terminate
-from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity
 import menu
+import random
 
 
-CARD_VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+CARD_VALUES = ["A", "6", "7", "8", "9", "10", "J", "Q", "K"]
 CARD_SUITS = ["Clubs", "Hearts", "Spades", "Diamonds"]
 FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
 
 
 class GameApp:
 
-    def __init__(self, parent=None, player='Natan', width=1690, height=890, volume=100, fps=60):
-        self.fps, self.curr_volume = fps, volume
-        self.width, self.height = width, height
+    def __init__(self, parent=None, player='Natan'):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
             self.screen = parent
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.menu_flag = False
         pygame.mixer.music.load('./music/casino_soundtrack.wav')
         pygame.mixer.music.set_volume(0.03 * self.curr_volume / 100)
         pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
-        self.menu = InGameMenu(pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self.menu = InGameMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
         self.objects = []
@@ -49,8 +51,6 @@ class GameApp:
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
         self.buttons.append(self.exit)
         self.objects.append((self.exit.__class__.__name__, self.exit.rect))
-        self.mouse_checking = MouseChecking(self.objects)
-
         self.background = pygame.transform.scale(load_image('casino_background.jpg'), (self.width, self.height))
         self.table = pygame.transform.scale(load_image('table.jpg', color_key=-1), (self.width, self.height))
         self.curr_fps = self.fps
@@ -60,6 +60,23 @@ class GameApp:
                                               (0.8 * self.width, 0.25 * self.height)),
                        pygame.transform.scale(load_image('cards_table_for_enemy.jpg'),
                                               (0.35 * self.width, 0.1 * self.height))]
+        self.card_list = []
+        for card_suit in CARD_SUITS:
+            for card_value in CARD_VALUES:
+                card = Card(card_suit, card_value, self.curr_volume, width=0.07 * self.width, height=0.20 * self.height)
+                self.card_list.append(card)
+        random.shuffle(self.card_list)
+        self.crab_cards = []
+        self.player_cards = []
+        for i in range(8):
+            self.crab_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
+            self.player_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
+            self.player_cards[i].position = (0.088 * self.width + 0.08 * self.width * i, 0.725 * self.height)
+            self.objects.append(("Button", self.player_cards[i].rect))
+        self.player_cards.sort(key=lambda bitch_card: (bitch_card.value, bitch_card.suit))
+        self.mouse_checking = MouseChecking(self.objects)
+        print([(i.suit, i.value) for i in self.player_cards],
+              [(i.suit, i.value) for i in self.crab_cards], sep="\n")
 
     def run(self):
         while True:
@@ -85,6 +102,14 @@ class GameApp:
                         pass
                 for button in self.buttons:
                     button.handle_event(ev)
+                for card in self.player_cards:
+                    card.handle_event(ev)
+
+            self.screen.blit(self.tables[0], (0.07 * self.width, 0.7 * self.height))
+            self.screen.blit(self.tables[1], (0.34 * self.width, 0.4 * self.height))
+
+            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
+
             if self.menu_flag:
                 self.mouse_checking.change_objects(self.menu_objects)
                 while True:
@@ -118,9 +143,19 @@ class GameApp:
                         break
             else:
                 self.mouse_checking.change_objects(self.objects)
+
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
+
+            for card in self.crab_cards:
+                card.set_persona("crab")
+
+            for card in self.player_cards:
+                card.set_persona("player")
+                card.hovered_checker(pygame.mouse.get_pos())
+                card.draw(self.screen)
+
             if self.counter_for_animation > 10:
                 self.counter_for_animation = 0
                 if self.animation:
@@ -129,9 +164,6 @@ class GameApp:
                     self.crabby_cards.update()
             else:
                 self.counter_for_animation += 1
-            self.screen.blit(self.tables[0], (0.07 * self.width, 0.7 * self.height))
-            self.screen.blit(self.tables[1], (0.34 * self.width, 0.4 * self.height))
-            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
             self.clock.tick(self.fps)
             pygame.display.flip()
 

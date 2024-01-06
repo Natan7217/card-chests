@@ -1,18 +1,19 @@
 import pygame
-from functions import load_image, terminate, search_player_data
+from functions import load_image, load_settings, terminate, search_player_data
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen
 import menu
 import city
 
 
 class BankApp:
-    def __init__(self, parent=None, player='Natan', width=1690, height=890, volume=100, fps=60):
-        self.fps, self.curr_volume = fps, volume
-        self.width, self.height = width, height
+    def __init__(self, parent=None, player='Natan'):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
             self.screen = parent
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.bank_data = search_player_data(self.player)
         self.menu_flag = False
@@ -21,7 +22,7 @@ class BankApp:
         pygame.mixer.music.set_volume(0.03 * self.curr_volume / 100)
         pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
-        self.menu = InGameMenu(pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self.menu = InGameMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
         self.objects = []

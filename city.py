@@ -15,9 +15,9 @@ class CityApp:
         else:
             pygame.quit()
             pygame.init()
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.menu_flag = False
-        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         pygame.mixer.music.load('./music/city_soundtrack.wav')

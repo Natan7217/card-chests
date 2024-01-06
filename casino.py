@@ -1,5 +1,5 @@
 import pygame
-from functions import load_image, terminate
+from functions import load_image, load_settings, terminate
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen
 import menu
 import city
@@ -7,9 +7,9 @@ import city
 
 class CasinoApp:
 
-    def __init__(self, parent=None, player='Natan', width=1690, height=890, volume=100, fps=60):
-        self.fps, self.curr_volume = fps, volume
-        self.width, self.height = width, height
+    def __init__(self, parent=None, player='Natan'):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
