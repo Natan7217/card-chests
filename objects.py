@@ -244,3 +244,22 @@ class Entity(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
+
+
+class Card(pygame.sprite.Sprite):
+    def __init__(self, suit, value, x, y):
+        """ Card sprite """
+        super().__init__()
+        self.suit = suit
+        self.value = value
+        self.image_file_name = f"cards/card{self.suit}{self.value}.png"
+        self.image = load_image(self.image_file_name)
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.is_face_up = False
+
+    def update(self):
+        pass
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect.topleft)
+

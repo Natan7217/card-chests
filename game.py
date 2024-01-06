@@ -4,7 +4,12 @@ from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity
 import menu
 
 
-class CasinoApp:
+CARD_VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+CARD_SUITS = ["Clubs", "Hearts", "Spades", "Diamonds"]
+FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
+
+
+class GameApp:
 
     def __init__(self, parent=None, player='Natan', width=1690, height=890, volume=100, fps=60):
         self.fps, self.curr_volume = fps, volume
@@ -50,11 +55,15 @@ class CasinoApp:
         self.table = pygame.transform.scale(load_image('table.jpg', color_key=-1), (self.width, self.height))
         self.curr_fps = self.fps
         self.counter_for_animation = 0
+        self.animation = True
 
     def run(self):
         while True:
             self.screen.blit(self.background, (0, 0))
-            self.crab.draw(self.screen)
+            if self.animation:
+                self.crab.draw(self.screen)
+            else:
+                self.crabby_cards.draw(self.screen)
             self.screen.blit(self.table, (0, 0))
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
@@ -62,6 +71,8 @@ class CasinoApp:
                 elif ev.type == pygame.KEYDOWN:
                     if ev.key == pygame.K_ESCAPE:
                         self.menu_flag = True
+                    elif ev.key == pygame.K_SPACE:
+                        self.animation = not self.animation
                 elif ev.type == pygame.USEREVENT:
                     if ev.button.text == " ":
                         self.menu_flag = True
@@ -107,8 +118,11 @@ class CasinoApp:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
             if self.counter_for_animation > 10:
-                self.crab.update()
                 self.counter_for_animation = 0
+                if self.animation:
+                    self.crab.update()
+                else:
+                    self.crabby_cards.update()
             else:
                 self.counter_for_animation += 1
             self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
@@ -117,5 +131,5 @@ class CasinoApp:
 
 
 if __name__ == '__main__':
-    app = CasinoApp()
+    app = GameApp()
     app.run()
