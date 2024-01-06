@@ -1,4 +1,4 @@
-from functions import load_image, load_settings, terminate
+from functions import load_image, load_settings, terminate, load_sound
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card
 import pygame
 import menu
@@ -22,8 +22,8 @@ class GameApp:
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.menu_flag = False
-        pygame.mixer.music.load('./music/casino_soundtrack.wav')
-        pygame.mixer.music.set_volume(0.03 * self.curr_volume / 100)
+        pygame.mixer.music.load('./music/gameplay_music.wav')
+        pygame.mixer.music.set_volume(0.3 * self.curr_volume / 1000)
         pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
         self.menu = InGameMenu(self.width, self.height)
@@ -71,12 +71,80 @@ class GameApp:
         for i in range(8):
             self.crab_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
             self.player_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
-            self.player_cards[i].position = (0.088 * self.width + 0.08 * self.width * i, 0.725 * self.height)
-            self.objects.append(("Button", self.player_cards[i].rect))
-        self.player_cards.sort(key=lambda bitch_card: (bitch_card.value, bitch_card.suit))
+        self.cards_sorter()
+
+        self.current_player = True  # True - player / False - crab
+
         self.mouse_checking = MouseChecking(self.objects)
+
+    def cards_sorter(self):
+        tmp_crab = self.crab_cards
+        tmp_player = self.player_cards
+        tmp_crab = sorted(tmp_crab, key=lambda k: k.value)
+        tmp_player = sorted(tmp_player, key=lambda k: k.value)
+        self.player_cards = tmp_player
+        self.crab_cards = tmp_crab
+        for i in range(len(self.player_cards)):
+            x = 0.088 * self.width + 0.08 * self.width * i if (self.player_cards[i - 1].value !=
+                                                               self.player_cards[i].value or i == 0) else (
+                    0.088 * self.width + (i - 1) * self.width * 0.08 + 0.02 * self.width)
+            self.player_cards[i].position = (x, 0.725 * self.height)
+            self.objects.append(("Button", self.player_cards[i].rect))
         print([(i.suit, i.value) for i in self.player_cards],
               [(i.suit, i.value) for i in self.crab_cards], sep="\n")
+
+    @staticmethod
+    def voice_play(person='player', action='attack', asking=False):
+        if asking:
+            load_sound(f'{person}_ask_cards.ogg').play()
+            pygame.time.wait(2000)
+        load_sound(f'{person}_{action}.ogg').play()
+
+    def random_card_search(self):
+        if self.card_list:
+            random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1))
+            if self.current_player:
+                self.player_cards.append(random_card)
+            else:
+                self.crab_cards.append(random_card)
+        self.cards_sorter()
+        self.current_player = not self.current_player
+
+    def cards_in_crab_checker(self, value):
+        crab_card_index = None
+        for i, card in enumerate(self.crab_cards):
+            if card.value == value:
+                crab_card_index = i
+                break
+
+        if crab_card_index is not None:
+            player_card = self.crab_cards.pop(crab_card_index)
+            self.player_cards.append(player_card)
+            self.cards_sorter()
+        else:
+            self.voice_play(person='crab', action='attack', asking=False)
+            self.random_card_search()
+
+    def crab_ai(self):
+        if not self.crab_cards:
+            self.random_card_search()
+        random_crab_card = random.choice(self.crab_cards)
+        self.voice_play(person='crab',
+                        action=random_crab_card.value, asking=True)
+        self.cards_in_player_checker(random_crab_card.value)
+
+    def cards_in_player_checker(self, value):
+        player_card_index = None
+        for i, card in enumerate(self.player_cards):
+            if card.value == value:
+                player_card_index = i
+                break
+        if player_card_index is not None:
+            crab_card = self.player_cards.pop(player_card_index)
+            self.crab_cards.append(crab_card)
+        else:
+            self.voice_play(person='player', action='attack', asking=False)
+            self.random_card_search()
 
     def run(self):
         while True:
@@ -100,6 +168,11 @@ class GameApp:
                         break
                     elif ev.button.text == 'RESTART':
                         pass
+                    else:
+                        if self.current_player:
+                            self.voice_play(person='player' if self.current_player else 'crab',
+                                            action=ev.button.text.split(':')[1], asking=True)
+                            self.cards_in_crab_checker(value=ev.button.text.split(':')[1])
                 for button in self.buttons:
                     button.handle_event(ev)
                 for card in self.player_cards:
@@ -150,10 +223,13 @@ class GameApp:
 
             for card in self.crab_cards:
                 card.set_persona("crab")
+            if self.current_player is False:
+                self.crab_ai()
 
             for card in self.player_cards:
                 card.set_persona("player")
-                card.hovered_checker(pygame.mouse.get_pos())
+                if self.current_player:
+                    card.hovered_checker(pygame.mouse.get_pos())
                 card.draw(self.screen)
 
             if self.counter_for_animation > 10:

@@ -115,6 +115,7 @@ class LoadingScreen:
             pygame.init()
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         else:
+            pygame.init()
             self.screen = parent
             self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         pygame.display.set_caption('Card-chests v1.0 — Loading')
@@ -255,10 +256,10 @@ class Card(pygame.sprite.Sprite):
         self.suit = suit
         self.value = value
         self.volume = volume
-        self.text = self.suit + self.value
+        self.text = self.suit + ':' + self.value
         self.width, self.height = width, height
         self.image_file_name = f"cards/card{self.text}.png"
-        self.image = load_image(self.image_file_name)
+        self.image = load_image(self.image_file_name.replace(':', ''))
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
         self.position = x, y
         self.rect = self.image.get_rect()
@@ -269,10 +270,10 @@ class Card(pygame.sprite.Sprite):
     def set_persona(self, persona: Literal["player", "crab"]):
         self.persona = persona
 
-    def set_sound(self):
+    """def set_sound(self):
         if self.persona:
             self.ask_sound = load_sound(f"{self.persona}_ask_cards.ogg")
-            self.card_sound = load_sound(f"{self.persona}_{self.value}.ogg")
+            self.card_sound = load_sound(f"{self.persona}_{self.value}.ogg")"""
 
     def update(self):
         pass
@@ -282,13 +283,6 @@ class Card(pygame.sprite.Sprite):
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
-            if not (self.ask_sound and self.card_sound):
-                self.set_sound()
-            self.ask_sound.set_volume(self.volume / 100)
-            self.ask_sound.play()
-            pygame.time.wait(2000)
-            self.card_sound.set_volume(self.volume / 100)
-            self.card_sound.play()
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
 
     def draw(self, surface):
