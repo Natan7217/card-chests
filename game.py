@@ -4,7 +4,6 @@ import pygame
 import menu
 import random
 
-
 CARD_VALUES = ["A", "6", "7", "8", "9", "10", "J", "Q", "K"]
 CARD_SUITS = ["Clubs", "Hearts", "Spades", "Diamonds"]
 FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
@@ -84,11 +83,19 @@ class GameApp:
         tmp_player = sorted(tmp_player, key=lambda k: k.value)
         self.player_cards = tmp_player
         self.crab_cards = tmp_crab
+        spacer = 0
+        repetitions = {}
         for i in range(len(self.player_cards)):
-            x = 0.088 * self.width + 0.08 * self.width * i if (self.player_cards[i - 1].value !=
-                                                               self.player_cards[i].value or i == 0) else (
-                    0.088 * self.width + (i - 1) * self.width * 0.08 + 0.02 * self.width)
-            self.player_cards[i].position = (x, 0.725 * self.height)
+            if self.player_cards[i].value not in repetitions.keys():
+                if i != 0:
+                    spacer += 1
+                repetitions[self.player_cards[i].value] = 1
+                y = 0.725 * self.height
+            else:
+                upper = repetitions[self.player_cards[i].value]
+                y = 0.725 * self.height - upper * self.height * 0.02
+                repetitions[self.player_cards[i].value] += 1
+            self.player_cards[i].position = (0.088 * self.width + 0.08 * self.width * spacer, y)
             self.objects.append(("Button", self.player_cards[i].rect))
         print([(i.suit, i.value) for i in self.player_cards],
               [(i.suit, i.value) for i in self.crab_cards], sep="\n")
@@ -99,6 +106,7 @@ class GameApp:
             load_sound(f'{person}_ask_cards.ogg').play()
             pygame.time.wait(2000)
         load_sound(f'{person}_{action}.ogg').play()
+        pygame.time.wait(2000)
 
     def random_card_search(self):
         if self.card_list:
@@ -124,6 +132,7 @@ class GameApp:
         else:
             self.voice_play(person='crab', action='attack', asking=False)
             self.random_card_search()
+            self.cards_sorter()
 
     def crab_ai(self):
         if not self.crab_cards:
@@ -142,6 +151,7 @@ class GameApp:
         if player_card_index is not None:
             crab_card = self.player_cards.pop(player_card_index)
             self.crab_cards.append(crab_card)
+            self.cards_sorter()
         else:
             self.voice_play(person='player', action='attack', asking=False)
             self.random_card_search()
@@ -231,6 +241,7 @@ class GameApp:
                 if self.current_player:
                     card.hovered_checker(pygame.mouse.get_pos())
                 card.draw(self.screen)
+                self.cards_sorter()
 
             if self.counter_for_animation > 10:
                 self.counter_for_animation = 0

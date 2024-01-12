@@ -1,5 +1,5 @@
 import pygame
-from functions import load_settings, load_image, terminate
+from functions import load_settings, load_image, terminate, search_player_data
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen
 import menu
 import bank
@@ -10,13 +10,13 @@ class CityApp:
 
     def __init__(self, parent=None, player='Battatt'):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.player, self.score = search_player_data(player)
         if parent is None:
             pygame.init()
         else:
             pygame.quit()
             pygame.init()
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        self.player = player
         self.menu_flag = False
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h

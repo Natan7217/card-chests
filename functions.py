@@ -103,8 +103,7 @@ def search_player_data(username=''):
             name = 'Player'
             for i in range(0, 10000):
                 if name + str(i) not in usernames:
-                    insert_data(name, 100)
-                    result = (name, 100)
+                    name = name + str(i)
                     break
         if name not in usernames:
             insert_data(name, 100)
