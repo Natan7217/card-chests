@@ -1,5 +1,5 @@
 from functions import load_image, load_settings, terminate, load_sound
-from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card
+from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card, RestartMenu
 import pygame
 import menu
 import random
@@ -20,12 +20,13 @@ class GameApp:
             self.screen = parent
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
-        self.menu_flag = False
+        self.menu_flag, self.restart_flag = False, False
         pygame.mixer.music.load('./music/gameplay_music.wav')
         pygame.mixer.music.set_volume(0.3 * self.curr_volume / 1000)
         pygame.mixer.music.play(loops=-1)
         pygame.display.set_caption('Card-chests v1.0')
         self.menu = InGameMenu(self.width, self.height)
+        self.restart_menu = RestartMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
         self.objects = []
@@ -71,20 +72,14 @@ class GameApp:
             self.crab_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
             self.player_cards.append(self.card_list.pop(random.randint(0, len(self.card_list) - 1)))
         self.cards_sorter()
+        self.dict_of_player, self.dict_of_crab = {}, {}
 
         self.current_player = True  # True - player / False - crab
+        self.crab_score, self.player_score = 0, 0
 
         self.mouse_checking = MouseChecking(self.objects)
 
-    def given_card_animation(self, coord: tuple[float, float], card: Card):
-        start_y = 0.1 * self.height
-
-        card.draw(self.screen)
-        for i in (start_y, 0, -1):
-
-        pass
-
-    def cards_sorter(self, random_card: Card = None):
+    def cards_sorter(self):
         self.player_cards = sorted(self.player_cards, key=lambda k: k.value)
         spacer = 0
         repetitions = {}
@@ -94,43 +89,52 @@ class GameApp:
                     spacer += 1
                 repetitions[self.player_cards[i].value] = 1
                 y = 0.725 * self.height
+                self.player_cards[i].active = True if (repetitions[self.player_cards[i].value] ==
+                                                       sum(1 for j in self.player_cards
+                                                           if j.value == self.player_cards[i].value)) else False
             else:
                 upper = repetitions[self.player_cards[i].value]
                 y = 0.725 * self.height - upper * self.height * 0.02
                 repetitions[self.player_cards[i].value] += 1
+                self.player_cards[i].active = True if (repetitions[self.player_cards[i].value] ==
+                                                       sum(1 for j in self.player_cards
+                                                           if j.value == self.player_cards[i].value)) else False
             self.player_cards[i].position = (0.088 * self.width + 0.08 * self.width * spacer, y)
             self.objects.append(("Button", self.player_cards[i].rect))
-        searching_value = random_card.value if random_card else None
-        coord_random_card = min([card.position for card in self.player_cards if card.value == searching_value])
-        self.given_card_animation(coord_random_card, random_card)
-        print([(i.suit, i.value) for i in self.player_cards],
-              [(i.suit, i.value) for i in self.crab_cards], sep="\n")
+        self.dict_of_player = {}
+        self.dict_of_crab = {}
+        for i in self.player_cards:
+            self.dict_of_player[i.value] = sum(1 for j in self.player_cards if j.value == i.value)
+        for g in self.crab_cards:
+            self.dict_of_crab[g.value] = sum(1 for y in self.crab_cards if g.value == y.value)
 
     @staticmethod
     def voice_play(person='player', action='attack', asking=False):
         if asking:
             load_sound(f'{person}_ask_cards.ogg').play()
-            pygame.time.wait(2000)
+            pygame.time.wait(1850)
         load_sound(f'{person}_{action}.ogg').play()
-        pygame.time.wait(2000)
+        pygame.time.wait(1850)
 
     def random_card_search(self):
         if self.card_list:
             random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1))
             if self.current_player:
                 self.player_cards.append(random_card)
-                self.cards_sorter(random_card)
+                self.cards_sorter()
+                self.current_player = not self.current_player
             else:
                 self.crab_cards.append(random_card)
-        self.current_player = not self.current_player
+                self.current_player = not self.current_player
         if self.current_player is False:
             self.animation = not self.animation
 
     def cards_in_crab_checker(self, value):
-        steal_cards = [card for card in self.player_cards if value == card.value]
+        steal_cards = [card for card in self.crab_cards if value == card.value]
         if len(steal_cards) > 0:
             for each_steal in steal_cards:
                 self.player_cards.append(each_steal)
+                self.crab_cards.remove(each_steal)
             self.cards_sorter()
             self.animation = not self.animation
         else:
@@ -150,14 +154,44 @@ class GameApp:
     def cards_in_player_checker(self, value):
         steal_cards = [card for card in self.player_cards if value == card.value]
         if len(steal_cards) > 0:
-            for i in steal_cards:
-                self.crab_cards.append(i)
+            for each_steal in steal_cards:
+                self.crab_cards.append(each_steal)
+                self.player_cards.remove(each_steal)
             self.cards_sorter()
             self.animation = not self.animation
         else:
             self.voice_play(person='player', action='attack', asking=False)
             self.random_card_search()
             self.animation = not self.animation
+
+    def chest_checker(self):
+        deleted_list_crab, deleted_list_player = [], []
+        a_list, b_list = [], []
+        if 4 in self.dict_of_player.values():
+            for key in self.dict_of_player.keys():
+                if self.dict_of_player[key] == 4:
+                    self.player_score += 1
+                    deleted_list_player.append(key)
+
+        if 4 in self.dict_of_crab.values():
+            for kkey in self.dict_of_crab.keys():
+                if self.dict_of_crab[kkey] == 4:
+                    self.crab_score += 1
+                    deleted_list_crab.append(kkey)
+        for card in self.player_cards:
+            if card.value not in deleted_list_player:
+                b_list.append(card)
+        for card in self.crab_cards:
+            if card.value not in deleted_list_crab:
+                a_list.append(card)
+        self.player_cards, self.crab_cards = b_list, a_list
+
+    def score_render(self):
+        text = f'{self.player_score}:{self.crab_score}'
+        font = pygame.font.Font(None, int(0.11 * self.width))
+        text_surface = font.render(text, True, 'white')
+        text_rect = text_surface.get_rect(topleft=(0.089 * self.width, 0.12 * self.height))
+        self.screen.blit(text_surface, text_rect)
 
     def run(self):
         attack_timer = 0
@@ -181,7 +215,7 @@ class GameApp:
                         self.menu_flag = True
                         break
                     elif ev.button.text == 'RESTART':
-                        pass
+                        self.restart_flag = True
                     else:
                         if self.current_player:
                             self.voice_play(person='player' if self.current_player else 'crab',
@@ -228,9 +262,35 @@ class GameApp:
                     self.clock.tick(self.fps)
                     if not self.menu_flag:
                         break
+            elif self.restart_flag:
+                self.mouse_checking.change_objects(self.restart_menu.objects)
+                while True:
+                    for ev in pygame.event.get():
+                        if ev.type == pygame.QUIT:
+                            terminate()
+                        elif ev.type == pygame.KEYDOWN:
+                            if ev.key == pygame.K_ESCAPE:
+                                self.restart_flag = False
+                                break
+                        elif ev.type == pygame.USEREVENT:
+                            if ev.button.text == "NO":
+                                self.restart_flag = False
+                                break
+                            elif ev.button.text == 'YES':
+                                restart_app = GameApp(player=self.player)
+                                restart_app.run()
+                        for button in self.restart_menu.buttons:
+                            button.handle_event(ev)
+                    for button in self.restart_menu.buttons:
+                        button.hovered_checker(pygame.mouse.get_pos())
+                    self.restart_menu.draw(self.screen)
+                    pygame.display.flip()
+                    self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
+                    self.clock.tick(self.fps)
+                    if not self.restart_flag:
+                        break
             else:
                 self.mouse_checking.change_objects(self.objects)
-
             for button in self.buttons:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
@@ -243,6 +303,7 @@ class GameApp:
                     card.hovered_checker(pygame.mouse.get_pos())
                 card.draw(self.screen)
                 self.cards_sorter()
+            self.chest_checker()
 
             if self.counter_for_animation > 10:
                 self.counter_for_animation = 0
@@ -250,15 +311,22 @@ class GameApp:
                     self.crab.update()
                 else:
                     self.crabby_cards.update()
-                    if attack_timer > 7:
+                    if attack_timer > 5:
                         self.animation = not self.animation
                         attack_timer = 0
                     else:
                         attack_timer += 1
             else:
                 self.counter_for_animation += 1
+            if ((len(self.player_cards) == 0 or len(self.crab_cards) == 0) and len(self.card_list) == 0
+                    or self.player_score == 5 or self.crab_score == 5 or self.card_list == 0):
+                self.game_exit()
+            self.score_render()
             self.clock.tick(self.fps)
             pygame.display.flip()
+
+    def game_exit(self):
+        pass  # WinWindow
 
 
 if __name__ == '__main__':

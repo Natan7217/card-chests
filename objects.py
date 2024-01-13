@@ -1,6 +1,6 @@
 import sys
 import pygame
-from typing import Optional, Union, Literal
+from typing import Optional, Union
 from functions import load_image, load_sound, load_settings
 
 
@@ -250,9 +250,10 @@ class Entity(pygame.sprite.Sprite):
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, suit, value, volume, /, x: int = 0, y: int = 0, *, width: Optional[Union[float, int]],
-                 height: Optional[Union[float, int]], persona: Literal["player", "crab"] = None):
+                 height: Optional[Union[float, int]], active=True):
         """ Card sprite """
         super().__init__()
+        self.active = active
         self.suit = suit
         self.value = value
         self.volume = volume
@@ -266,16 +267,45 @@ class Card(pygame.sprite.Sprite):
         self.is_hovered = False
         self.ask_sound, self.card_sound = None, None
 
-    def update(self):
-        pass
-
     def hovered_checker(self, mouse_pos):
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered and self.active:
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
 
     def draw(self, surface):
         self.rect.topleft = self.position
         surface.blit(self.image, self.rect.topleft)
+
+
+class RestartMenu:
+    def __init__(self, screen_width, screen_height):
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.width, self.height = screen_width, screen_height
+        self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.titles = ['YES', 'NO']
+        self.buttons = []
+        self.objects = []
+        self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height
+        self.button_x, self.button_y = ((screen_width - self.button_width) / 2,
+                                        (screen_height - self.button_height * len(self.titles)) / 2)
+        for i in range(len(self.titles)):
+            self.buttons.append(Button(x=self.button_x,
+                                       y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
+                                       image_name='green_button.jpg', width=self.button_width,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
+                                       screen_width=self.width, sound_name='click.wav'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+
+    def draw(self, screen: pygame.surface.Surface):
+        text = f'Are you sure you want to restart the game?'
+        font = pygame.font.Font(None, int(0.05 * self.width))
+        text_surface = font.render(text, True, 'white')
+        text_rect = text_surface.get_rect(topleft=(0.12 * self.width, 0.12 * self.height))
+        pygame.draw.rect(self.background, (128, 128, 128, 10), self.background.get_rect())
+        screen.blit(self.background, (0, 0))
+        for i in range(len(self.titles)):
+            self.buttons[i].hovered_checker(pygame.mouse.get_pos())
+            self.buttons[i].draw(screen)
+        screen.blit(text_surface, text_rect)
