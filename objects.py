@@ -264,16 +264,7 @@ class Card(pygame.sprite.Sprite):
         self.position = x, y
         self.rect = self.image.get_rect()
         self.is_hovered = False
-        self.persona = persona
         self.ask_sound, self.card_sound = None, None
-
-    def set_persona(self, persona: Literal["player", "crab"]):
-        self.persona = persona
-
-    """def set_sound(self):
-        if self.persona:
-            self.ask_sound = load_sound(f"{self.persona}_ask_cards.ogg")
-            self.card_sound = load_sound(f"{self.persona}_{self.value}.ogg")"""
 
     def update(self):
         pass

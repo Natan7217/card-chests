@@ -117,6 +117,8 @@ class GameApp:
                 self.crab_cards.append(random_card)
         self.cards_sorter()
         self.current_player = not self.current_player
+        if self.current_player is False:
+            self.animation = not self.animation
 
     def cards_in_crab_checker(self, value):
         crab_card_index = None
@@ -129,10 +131,12 @@ class GameApp:
             player_card = self.crab_cards.pop(crab_card_index)
             self.player_cards.append(player_card)
             self.cards_sorter()
+            self.animation = not self.animation
         else:
             self.voice_play(person='crab', action='attack', asking=False)
             self.random_card_search()
             self.cards_sorter()
+            self.animation = not self.animation
 
     def crab_ai(self):
         if not self.crab_cards:
@@ -152,11 +156,14 @@ class GameApp:
             crab_card = self.player_cards.pop(player_card_index)
             self.crab_cards.append(crab_card)
             self.cards_sorter()
+            self.animation = not self.animation
         else:
             self.voice_play(person='player', action='attack', asking=False)
             self.random_card_search()
+            self.animation = not self.animation
 
     def run(self):
+        attack_timer = 0
         while True:
             self.screen.blit(self.background, (0, 0))
             if self.animation:
@@ -231,13 +238,10 @@ class GameApp:
                 button.hovered_checker(pygame.mouse.get_pos())
                 button.draw(self.screen)
 
-            for card in self.crab_cards:
-                card.set_persona("crab")
             if self.current_player is False:
                 self.crab_ai()
 
             for card in self.player_cards:
-                card.set_persona("player")
                 if self.current_player:
                     card.hovered_checker(pygame.mouse.get_pos())
                 card.draw(self.screen)
@@ -249,6 +253,11 @@ class GameApp:
                     self.crab.update()
                 else:
                     self.crabby_cards.update()
+                    if attack_timer > 7:
+                        self.animation = not self.animation
+                        attack_timer = 0
+                    else:
+                        attack_timer += 1
             else:
                 self.counter_for_animation += 1
             self.clock.tick(self.fps)
