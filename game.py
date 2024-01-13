@@ -62,7 +62,7 @@ class GameApp:
         self.card_list = []
         for card_suit in CARD_SUITS:
             for card_value in CARD_VALUES:
-                card = Card(card_suit, card_value, self.curr_volume, width=0.07 * self.width, height=0.20 * self.height)
+                card = Card(card_suit, card_value, self.curr_volume, width=0.07 * self.width, height=0.2 * self.height)
                 self.card_list.append(card)
         random.shuffle(self.card_list)
         self.crab_cards = []
@@ -76,13 +76,16 @@ class GameApp:
 
         self.mouse_checking = MouseChecking(self.objects)
 
-    def cards_sorter(self):
-        tmp_crab = self.crab_cards
-        tmp_player = self.player_cards
-        tmp_crab = sorted(tmp_crab, key=lambda k: k.value)
-        tmp_player = sorted(tmp_player, key=lambda k: k.value)
-        self.player_cards = tmp_player
-        self.crab_cards = tmp_crab
+    def given_card_animation(self, coord: tuple[float, float], card: Card):
+        start_y = 0.1 * self.height
+
+        card.draw(self.screen)
+        for i in (start_y, 0, -1):
+
+        pass
+
+    def cards_sorter(self, random_card: Card = None):
+        self.player_cards = sorted(self.player_cards, key=lambda k: k.value)
         spacer = 0
         repetitions = {}
         for i in range(len(self.player_cards)):
@@ -97,6 +100,9 @@ class GameApp:
                 repetitions[self.player_cards[i].value] += 1
             self.player_cards[i].position = (0.088 * self.width + 0.08 * self.width * spacer, y)
             self.objects.append(("Button", self.player_cards[i].rect))
+        searching_value = random_card.value if random_card else None
+        coord_random_card = min([card.position for card in self.player_cards if card.value == searching_value])
+        self.given_card_animation(coord_random_card, random_card)
         print([(i.suit, i.value) for i in self.player_cards],
               [(i.suit, i.value) for i in self.crab_cards], sep="\n")
 
@@ -113,23 +119,18 @@ class GameApp:
             random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1))
             if self.current_player:
                 self.player_cards.append(random_card)
+                self.cards_sorter(random_card)
             else:
                 self.crab_cards.append(random_card)
-        self.cards_sorter()
         self.current_player = not self.current_player
         if self.current_player is False:
             self.animation = not self.animation
 
     def cards_in_crab_checker(self, value):
-        crab_card_index = None
-        for i, card in enumerate(self.crab_cards):
-            if card.value == value:
-                crab_card_index = i
-                break
-
-        if crab_card_index is not None:
-            player_card = self.crab_cards.pop(crab_card_index)
-            self.player_cards.append(player_card)
+        steal_cards = [card for card in self.player_cards if value == card.value]
+        if len(steal_cards) > 0:
+            for each_steal in steal_cards:
+                self.player_cards.append(each_steal)
             self.cards_sorter()
             self.animation = not self.animation
         else:
@@ -147,14 +148,10 @@ class GameApp:
         self.cards_in_player_checker(random_crab_card.value)
 
     def cards_in_player_checker(self, value):
-        player_card_index = None
-        for i, card in enumerate(self.player_cards):
-            if card.value == value:
-                player_card_index = i
-                break
-        if player_card_index is not None:
-            crab_card = self.player_cards.pop(player_card_index)
-            self.crab_cards.append(crab_card)
+        steal_cards = [card for card in self.player_cards if value == card.value]
+        if len(steal_cards) > 0:
+            for i in steal_cards:
+                self.crab_cards.append(i)
             self.cards_sorter()
             self.animation = not self.animation
         else:

@@ -6,7 +6,6 @@ import city
 
 
 class CasinoApp:
-
     def __init__(self, parent=None, player='Natan'):
         self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
