@@ -1,25 +1,23 @@
+import sys
 import pygame
-<<<<<<< Updated upstream
-from functions import load_image, load_sound
-=======
 import json
 from typing import Optional, Union
 from functions import load_image, load_sound, load_settings
->>>>>>> Stashed changes
 
 
 class Button:
     def __init__(self, x, y, width, height, text, image_name, volume, screen_width, hover_image_name=None,
-                 sound_name=None):
+                 sound_name=None, color_key=None):
         self.x, self.y, self.width, self.height, self.volume = x, y, width, height, volume
         self.screen_width = screen_width
         self.text = text
-        self.image = load_image(image_name)
+        self.image = load_image(image_name, color_key=color_key)
         self.image = pygame.transform.scale(self.image, (width, height))
         self.hover_image = self.image
         self.hover_image_name = hover_image_name
         if self.hover_image_name:
-            self.hover_image = pygame.transform.scale(load_image(self.hover_image_name), (width, height))
+            self.hover_image = pygame.transform.scale(load_image(self.hover_image_name, color_key=color_key),
+                                                      (width, height))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.sound = load_sound(sound_name) if sound_name else None
         self.is_hovered = False
@@ -49,11 +47,9 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
             if self.sound:
-                self.sound.set_volume(self.volume)
+                self.sound.set_volume(self.volume / 100)
                 self.sound.play()
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
-<<<<<<< Updated upstream
-=======
 
 
 class TextInput:
@@ -375,4 +371,3 @@ class WinMenu:
             self.buttons[i].hovered_checker(pygame.mouse.get_pos())
             self.buttons[i].draw(screen)
         screen.blit(text_surface, text_rect)
->>>>>>> Stashed changes

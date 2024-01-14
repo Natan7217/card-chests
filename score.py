@@ -1,30 +1,22 @@
 import pygame
 import menu
-import json
 from functions import load_settings, load_image, terminate, load_data
 from objects import Button, MouseChecking
 
 
 class ScoreApp:
     def __init__(self, parent=None):
-        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
-            self.width, self.height, self.min_width, self.min_height = load_settings()
-        with open("config/lang.json", encoding="utf-8") as lang_file:
-            lang_json = json.load(lang_file)
-            lang_json_dict = lang_json[self.curr_lang]
-            self.win_title, self.sc_text = lang_json_dict["WIN_TITLES"]["GAME"], lang_json_dict["WIN_TITLES"]["SCORE"]
-            self.back_text = lang_json_dict["BACK_BUTTON"]
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         if parent is None:
             pygame.init()
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         else:
             self.screen = parent
             self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        pygame.display.set_icon(load_image('icon.png'))
-        pygame.display.set_caption(f'{self.win_title} — {self.sc_text}')
+        pygame.display.set_caption('Card-chests v1.0 — Score')
         self.clock = pygame.time.Clock()
         self.background = pygame.transform.scale(load_image('background_folder.jpg'), (self.width, self.height))
-        self.titles = [self.back_text]
+        self.titles = ['BACK']
         self.buttons = []
         self.objects = []
         self.mouse_checking = MouseChecking(self.objects)
@@ -73,12 +65,11 @@ class ScoreApp:
             button.draw(self.screen)
 
     def run(self):
-        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
-            self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         for i in range(len(self.titles)):
             self.buttons.append(Button(x=self.button_x + i * (self.button_width + self.button_width * 0.2),
                                        y=self.button_y, image_name='green_button.jpg', width=self.button_width,
-                                       height=self.button_height, text=self.titles[i], volume=self.curr_vol,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
                                        screen_width=self.width, sound_name='click1.ogg'))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
         self.mouse_checking.change_objects(self.objects)
@@ -90,7 +81,7 @@ class ScoreApp:
                 elif ev.type == pygame.VIDEORESIZE:
                     self.updates(ev.w, ev.h)
                 elif ev.type == pygame.USEREVENT:
-                    if ev.button.text == self.back_text:
+                    if ev.button.text == "BACK":
                         menu_app = menu.MenuApp(parent=self.screen)
                         menu_app.run()
                 for button in self.buttons:

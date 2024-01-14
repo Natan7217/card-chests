@@ -1,10 +1,8 @@
+from functions import load_image, load_settings, terminate, load_sound
+from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card, RestartMenu
 import pygame
-import casino
 import menu
 import random
-import json
-from functions import load_image, load_settings, terminate, load_sound, load_data
-from objects import MouseChecking, Button, InGameMenu, LoadingScreen, Entity, Card, RestartMenu, WinMenu
 
 CARD_VALUES = ["A", "6", "7", "8", "9", "10", "J", "Q", "K"]
 CARD_SUITS = ["Clubs", "Hearts", "Spades", "Diamonds"]
@@ -12,7 +10,6 @@ FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
 
 
 class GameApp:
-
     def __init__(self, parent=None, player='Natan', *, bet: int):
         self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
             self.width, self.height, self.min_width, self.min_height = load_settings()
@@ -27,27 +24,26 @@ class GameApp:
             self.loading_text = lang_json_dict["LOADING_TEXT"]
             self.no_button, self.yes_button = lang_json_dict["NO_BUTTON"], lang_json_dict["YES_BUTTON"]
             self.come_back_text, self.main_menu_text = lang_json_dict["COME_BACK"], lang_json_dict["MAIN_MENU"]
+            self.diff_ind = lang_json_dict["SETTINGS_MENU"]["DIFFICULT"].index(self.curr_diff)
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
             self.screen = parent
-        pygame.display.set_icon(load_image('icon.png'))
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
-        self.bet = bet
         self.menu_flag, self.restart_flag = False, False
         pygame.mixer.music.load('./music/gameplay_music.wav')
-        pygame.mixer.music.set_volume(0.3 * self.curr_vol / 1000)
+        pygame.mixer.music.set_volume(0.3 * self.curr_volume / 1000)
         pygame.mixer.music.play(loops=-1)
-        pygame.display.set_caption(self.win_title)
+        pygame.display.set_caption('Card-chests v1.0')
         self.menu = InGameMenu(self.width, self.height)
         self.restart_menu = RestartMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
         self.objects = []
         self.buttons = []
-        self.titles = [self.restart_text]
+        self.titles = ['RESTART']
         self.crab = Entity(load_image("crab_idle.png"), 4, 1, self.width // 1.001 - self.width * 0.7,
                            - self.height * 0.13, self.width * 0.4, self.height * 0.95)
         self.crabby_cards = Entity(load_image("crab_attack.png"), 5, 1,
@@ -56,13 +52,13 @@ class GameApp:
         self.button_width, self.button_height = 0.2 * self.width, 0.12 * self.height
         self.button_x, self.button_y = 0.08 * self.width, 0.00001 * self.height
         self.exit = Button(x=0.006 * self.width, y=0.01 * self.height, image_name='exit.png', width=0.07 * self.width,
-                           height=0.098 * self.height, text=' ', volume=self.curr_vol, screen_width=self.width,
+                           height=0.098 * self.height, text=' ', volume=self.curr_volume, screen_width=self.width,
                            sound_name='click.wav', color_key=-1)
         for i in range(len(self.titles)):
             self.buttons.append(Button(x=self.button_x + i * (self.button_width + 0.2 * self.button_width),
                                        y=self.button_y,
                                        image_name='bank_button.png', width=self.button_width, height=self.button_height,
-                                       text=self.titles[i], volume=self.curr_vol, screen_width=self.width,
+                                       text=self.titles[i], volume=self.curr_volume, screen_width=self.width,
                                        sound_name='click.wav', color_key=-1))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
         self.buttons.append(self.exit)
@@ -79,7 +75,7 @@ class GameApp:
         self.card_list = []
         for card_suit in CARD_SUITS:
             for card_value in CARD_VALUES:
-                card = Card(card_suit, card_value, self.curr_vol, width=0.07 * self.width, height=0.2 * self.height)
+                card = Card(card_suit, card_value, self.curr_volume, width=0.07 * self.width, height=0.2 * self.height)
                 self.card_list.append(card)
         random.shuffle(self.card_list)
         self.crab_cards = []
@@ -96,9 +92,6 @@ class GameApp:
         self.mouse_checking = MouseChecking(self.objects)
 
     def cards_sorter(self):
-        self.objects = []
-        for button in self.buttons:
-            self.objects.append((button.__class__.__name__, button.rect))
         self.player_cards = sorted(self.player_cards, key=lambda k: k.value)
         spacer = 0
         repetitions = {}
@@ -137,7 +130,8 @@ class GameApp:
 
     def random_card_search(self):
         if self.card_list:
-            random_card = self.card_list.pop()
+            random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1)) if self.diff_ind else \
+                self.card_list.pop()
             if self.current_player:
                 self.player_cards.append(random_card)
                 self.cards_sorter()
@@ -191,14 +185,12 @@ class GameApp:
                 if self.dict_of_player[key] == 4:
                     self.player_score += 1
                     deleted_list_player.append(key)
-                    self.dict_of_player[key] = 0
 
         if 4 in self.dict_of_crab.values():
             for kkey in self.dict_of_crab.keys():
                 if self.dict_of_crab[kkey] == 4:
                     self.crab_score += 1
                     deleted_list_crab.append(kkey)
-                    self.dict_of_crab[kkey] = 0
         for card in self.player_cards:
             if card.value not in deleted_list_player:
                 b_list.append(card)
@@ -235,7 +227,7 @@ class GameApp:
                     if ev.button.text == " ":
                         self.menu_flag = True
                         break
-                    elif ev.button.text == self.restart_text:
+                    elif ev.button.text == 'RESTART':
                         self.restart_flag = True
                     else:
                         if self.current_player:
@@ -263,15 +255,15 @@ class GameApp:
                                 self.menu_flag = False
                                 break
                         elif ev.type == pygame.USEREVENT:
-                            if ev.button.text == self.continue_text:
+                            if ev.button.text == "CONTINUE":
                                 self.menu_flag = False
                                 break
-                            elif ev.button.text == self.back_menu_text:
-                                loading_screen = LoadingScreen(asleep=10, titles=[self.loading_text], key_flag=False)
+                            elif ev.button.text == "BACK TO MAIN MENU":
+                                loading_screen = LoadingScreen(asleep=10, titles=['Game loading...'], key_flag=False)
                                 screen = loading_screen.run()
                                 menu_app = menu.MenuApp(parent=screen)
                                 menu_app.run()
-                            elif ev.button.text == self.exit_text:
+                            elif ev.button.text == 'EXIT':
                                 terminate()
                         for button in self.menu.buttons:
                             button.handle_event(ev)
@@ -294,11 +286,11 @@ class GameApp:
                                 self.restart_flag = False
                                 break
                         elif ev.type == pygame.USEREVENT:
-                            if ev.button.text == self.no_button:
+                            if ev.button.text == "NO":
                                 self.restart_flag = False
                                 break
-                            elif ev.button.text == self.yes_button:
-                                restart_app = GameApp(player=self.player, bet=self.bet)
+                            elif ev.button.text == 'YES':
+                                restart_app = GameApp(player=self.player)
                                 restart_app.run()
                         for button in self.restart_menu.buttons:
                             button.handle_event(ev)
@@ -347,36 +339,9 @@ class GameApp:
             pygame.display.flip()
 
     def game_exit(self):
-        win_menu = WinMenu(screen_width=self.width, screen_height=self.height)
-        result = (self.player_score > self.crab_score) if self.player_score != self.crab_score else None
-        self.mouse_checking.change_objects(win_menu.objects)
-        while True:
-            for ev in pygame.event.get():
-                if ev.type == pygame.QUIT:
-                    terminate()
-                elif ev.type == pygame.USEREVENT:
-                    if result is not None:
-                        load_data(f"UPDATE scores SET score=score{('+' if result else '-') + str(self.bet)}"
-                                  f" WHERE user LIKE '{self.player}'")
-                    if ev.button.text == self.come_back_text:
-                        casino_app = casino.CasinoApp(player=self.player)
-                        casino_app.run()
-                    elif ev.button.text == self.main_menu_text:
-                        loading_screen = LoadingScreen(asleep=10, titles=[self.loading_text], key_flag=False)
-                        screen = loading_screen.run()
-                        menu_app = menu.MenuApp(parent=screen)
-                        menu_app.run()
-                for button in win_menu.buttons:
-                    button.handle_event(ev)
-            for button in win_menu.buttons:
-                button.hovered_checker(pygame.mouse.get_pos())
-            win_menu.draw(self.screen, rp=self.bet,
-                          game_res=result)
-            pygame.display.flip()
-            self.mouse_checking.hovered_checker(pygame.mouse.get_pos())
-            self.clock.tick(self.fps)
+        pass  # WinWindow
 
 
 if __name__ == '__main__':
-    app = GameApp(bet=100)
+    app = GameApp()
     app.run()

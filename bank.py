@@ -1,38 +1,27 @@
 import pygame
-import menu
-import city
-import json
 from functions import load_image, load_settings, terminate, search_player_data
 from objects import MouseChecking, Button, InGameMenu, LoadingScreen
+import menu
+import city
 
 
 class BankApp:
     def __init__(self, parent=None, player='Natan'):
-        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
-            self.width, self.height, self.min_width, self.min_height = load_settings()
-        with open("config/lang.json", encoding="utf-8") as lang_file:
-            self.lang_json = json.load(lang_file)
-            lang_json_dict = self.lang_json[self.curr_lang]
-            self.win_title = lang_json_dict["WIN_TITLES"]["GAME"]
-            self.back_text = lang_json_dict["BACK_BUTTON"]
-            self.continue_text = lang_json_dict["CONTINUE_BUTTON"]
-            self.back_menu_text = lang_json_dict["BACK_MENU_BUTTON"]
-            self.exit_text = lang_json_dict["EXIT_BUTTON"]
+        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
         else:
             self.screen = parent
-        pygame.display.set_icon(load_image('icon.png'))
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         self.player = player
         self.bank_data = search_player_data(self.player)
         self.menu_flag = False
         self.score_flag = False
         pygame.mixer.music.load('./music/bank_soundtrack.wav')
-        pygame.mixer.music.set_volume(0.03 * self.curr_vol / 100)
+        pygame.mixer.music.set_volume(0.03 * self.curr_volume / 100)
         pygame.mixer.music.play(loops=-1)
-        pygame.display.set_caption(self.win_title)
+        pygame.display.set_caption('Card-chests v1.0')
         self.menu = InGameMenu(self.width, self.height)
         self.menu_objects = self.menu.objects
         self.clock = pygame.time.Clock()
@@ -42,11 +31,11 @@ class BankApp:
         self.font = pygame.font.Font(None, int(0.03 * self.width))
         self.char_index = 0
         self.text_x, self.text_y = self.width // 2, 0.16 * self.height
-        self.titles = ['$$$', self.back_text]
+        self.titles = ['$$$', 'BACK']
         self.button_width, self.button_height = 0.2 * self.width, 0.12 * self.height
         self.button_x, self.button_y = 0.04 * self.width, 0.487 * self.height
         self.exit = Button(x=0.006 * self.width, y=0.01 * self.height, image_name='exit.png', width=0.07 * self.width,
-                           height=0.098 * self.height, text=' ', volume=self.curr_vol, screen_width=self.width,
+                           height=0.098 * self.height, text=' ', volume=self.curr_volume, screen_width=self.width,
                            sound_name='click.wav', color_key=-1)
         self.buttons.append(self.exit)
         self.objects.append((self.exit.__class__.__name__, self.exit.rect))
@@ -54,7 +43,7 @@ class BankApp:
             self.buttons.append(Button(x=self.button_x,
                                        y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
                                        image_name='bank_button.png', width=self.button_width, height=self.button_height,
-                                       text=self.titles[i], volume=self.curr_vol, screen_width=self.width,
+                                       text=self.titles[i], volume=self.curr_volume, screen_width=self.width,
                                        sound_name='bank_button.wav'))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
         self.mouse_checking = MouseChecking(self.objects)
@@ -86,7 +75,7 @@ class BankApp:
                         current_text = ''
                         self.score_flag = not self.score_flag
                         self.char_index = 0
-                    elif ev.button.text == self.back_text:
+                    elif ev.button.text == "BACK":
                         city_app = city.CityApp(player=self.player)
                         city_app.run()
                     elif ev.button.text == ' ':
@@ -107,16 +96,17 @@ class BankApp:
                                 self.menu_flag = False
                                 break
                         elif ev.type == pygame.USEREVENT:
-                            if ev.button.text == self.continue_text:
+                            if ev.button.text == "CONTINUE":
                                 self.menu_flag = False
                                 break
-                            elif ev.button.text == self.back_menu_text:
+                            elif ev.button.text == "BACK TO MAIN MENU":
                                 loading_screen = LoadingScreen(asleep=4, titles=['Loading...', 'Return to main menu'],
-                                                               key_flag=False)
+                                                               key_flag=False,
+                                                               image_name='in_game_loading_background.jpg')
                                 screen = loading_screen.run()
                                 menu_app = menu.MenuApp(parent=screen)
                                 menu_app.run()
-                            elif ev.button.text == self.exit_text:
+                            elif ev.button.text == 'EXIT':
                                 terminate()
                         for button in self.menu.buttons:
                             button.handle_event(ev)
