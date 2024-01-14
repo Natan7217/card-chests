@@ -1,5 +1,6 @@
 import sys
 import pygame
+import json
 from typing import Optional, Union
 from functions import load_image, load_sound, load_settings
 
@@ -52,7 +53,7 @@ class Button:
 
 
 class TextInput:
-    def __init__(self, x, y, width, height, image_name, screen_width):
+    def __init__(self, x, y, width, height, image_name, screen_width, only_digits: bool = False):
         self.x, self.y, self.width, self.height = x, y, width, height
         self.screen_width = screen_width
         self.text = ''
@@ -62,6 +63,8 @@ class TextInput:
         self.counter = 0
         self.text_input_flag = False
         self.is_hovered = False
+        self.only_digits = only_digits
+        self.__color = ""
 
     def draw(self, surface):
         self.counter += 1
@@ -99,7 +102,7 @@ class TextInput:
                 self.text = self.text.replace('|', '')
                 self.text_input_flag = False
                 return self.text
-            else:
+            elif self.only_digits is False or event.unicode.isdigit():
                 self.text = self.text.replace('|', '')
                 self.text += event.unicode
                 self.text += "|"
@@ -109,7 +112,12 @@ class TextInput:
 class LoadingScreen:
     def __init__(self, key_flag=True, asleep=-1, parent=None, titles=None, image_name='loading_screen.jpg'):
         self.titles = [] if titles is None else titles
-        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
+            self.width, self.height, self.min_width, self.min_height = load_settings()
+        with open("config/lang.json", encoding="utf-8") as lang_file:
+            lang_json = json.load(lang_file)
+            win_title_dict = lang_json[self.curr_lang]["WIN_TITLES"]
+            game_title, load_title = win_title_dict["GAME"], win_title_dict["LOADING"]
         self.key_flag = key_flag
         if parent is None:
             pygame.init()
@@ -118,7 +126,7 @@ class LoadingScreen:
             pygame.init()
             self.screen = parent
             self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        pygame.display.set_caption('Card-chests v1.0 — Loading')
+        pygame.display.set_caption(f'{game_title} — {load_title}')
         pygame.mixer.music.stop()
         self.time = asleep
         self.background = pygame.transform.scale(load_image(image_name), (self.width, self.height))
@@ -196,20 +204,27 @@ class MouseChecking:
 
 class InGameMenu:
     def __init__(self, screen_width, screen_height):
-        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
+            self.width, self.height, self.min_width, self.min_height = load_settings()
+        with open("config/lang.json", encoding="utf-8") as lang_file:
+            lang_json = json.load(lang_file)
+            lang_json_dict = lang_json[self.curr_lang]
+            self.continue_text = lang_json_dict["CONTINUE_BUTTON"]
+            self.back_menu_text = lang_json_dict["BACK_MENU_BUTTON"]
+            self.exit_text = lang_json_dict["EXIT_BUTTON"]
         self.width, self.height = screen_width, screen_height
         self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        self.titles = ['CONTINUE', 'BACK TO MAIN MENU', 'EXIT']
+        self.titles = [self.continue_text, self.back_menu_text, self.exit_text]
         self.buttons = []
         self.objects = []
-        self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height
+        self.button_width, self.button_height = 0.35 * screen_width, 0.15 * screen_height
         self.button_x, self.button_y = ((screen_width - self.button_width) / 2,
                                         (screen_height - self.button_height * len(self.titles)) / 2)
         for i in range(len(self.titles)):
             self.buttons.append(Button(x=self.button_x,
                                        y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
                                        image_name='green_button.jpg', width=self.button_width,
-                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_vol,
                                        screen_width=self.width, sound_name='click.wav'))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
 
@@ -281,10 +296,16 @@ class Card(pygame.sprite.Sprite):
 
 class RestartMenu:
     def __init__(self, screen_width, screen_height):
-        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
+            self.width, self.height, self.min_width, self.min_height = load_settings()
+        with open("config/lang.json", encoding="utf-8") as lang_file:
+            lang_json = json.load(lang_file)
+            lang_json_dict = lang_json[self.curr_lang]
+            yes_button, no_button = lang_json_dict["YES_BUTTON"], lang_json_dict["NO_BUTTON"]
+            self.ask_restart_text = lang_json_dict["ASK_RESTART"]
         self.width, self.height = screen_width, screen_height
         self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        self.titles = ['YES', 'NO']
+        self.titles = [yes_button, no_button]
         self.buttons = []
         self.objects = []
         self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height
@@ -294,16 +315,57 @@ class RestartMenu:
             self.buttons.append(Button(x=self.button_x,
                                        y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
                                        image_name='green_button.jpg', width=self.button_width,
-                                       height=self.button_height, text=self.titles[i], volume=self.curr_volume,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_vol,
                                        screen_width=self.width, sound_name='click.wav'))
             self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
 
     def draw(self, screen: pygame.surface.Surface):
-        text = f'Are you sure you want to restart the game?'
+        text = self.ask_restart_text
         font = pygame.font.Font(None, int(0.05 * self.width))
         text_surface = font.render(text, True, 'white')
         text_rect = text_surface.get_rect(topleft=(0.12 * self.width, 0.12 * self.height))
         pygame.draw.rect(self.background, (128, 128, 128, 10), self.background.get_rect())
+        screen.blit(self.background, (0, 0))
+        for i in range(len(self.titles)):
+            self.buttons[i].hovered_checker(pygame.mouse.get_pos())
+            self.buttons[i].draw(screen)
+        screen.blit(text_surface, text_rect)
+
+
+class WinMenu:
+    def __init__(self, screen_width, screen_height):
+        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
+            self.width, self.height, self.min_width, self.min_height = load_settings()
+        with open("config/lang.json", encoding="utf-8") as lang_file:
+            lang_json = json.load(lang_file)
+            lang_json_dict = lang_json[self.curr_lang]
+            come_back_text, main_menu_text = lang_json_dict["COME_BACK"], lang_json_dict["MAIN_MENU"]
+            self.win_text = lang_json_dict["WIN_MENU"]["WIN_TEXT"]
+            self.lose_text = lang_json_dict["WIN_MENU"]["LOSE_TEXT"]
+            self.tie_text = lang_json_dict["WIN_MENU"]["TIE_TEXT"]
+        self.width, self.height = screen_width, screen_height
+        self.background = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.titles = [come_back_text, main_menu_text]
+        self.buttons = []
+        self.objects = []
+        self.button_width, self.button_height = 0.25 * screen_width, 0.1 * screen_height
+        self.button_x, self.button_y = ((screen_width - self.button_width) / 2,
+                                        (screen_height - self.button_height * len(self.titles)) / 2)
+        for i in range(len(self.titles)):
+            self.buttons.append(Button(x=self.button_x,
+                                       y=self.button_y + i * (self.button_height + 0.2 * self.button_height),
+                                       image_name='green_button.jpg', width=self.button_width,
+                                       height=self.button_height, text=self.titles[i], volume=self.curr_vol,
+                                       screen_width=self.width, sound_name='click.wav'))
+            self.objects.append((self.buttons[i].__class__.__name__, self.buttons[i].rect))
+
+    def draw(self, screen: pygame.surface.Surface, rp: int, game_res: Optional[Union[bool, None]]):
+        text = (f'{self.win_text} {rp}$' if game_res else f'{self.lose_text} {rp}$' if game_res is not None
+                else self.tie_text)
+        font = pygame.font.Font(None, int(0.05 * self.width))
+        text_surface = font.render(text, True, 'white')
+        text_rect = text_surface.get_rect(topleft=(0.12 * self.width, 0.12 * self.height))
+        pygame.draw.rect(self.background, (242, 202, 24, 10), self.background.get_rect())
         screen.blit(self.background, (0, 0))
         for i in range(len(self.titles)):
             self.buttons[i].hovered_checker(pygame.mouse.get_pos())

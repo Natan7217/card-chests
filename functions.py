@@ -51,9 +51,9 @@ def load_settings() -> tuple[int, int, int, int, int, int]:
 def update_settings(fps_update=None, volume_update=None):
     with open('config/settings.json') as file:
         data = json.load(file)
-    if not(fps_update is None):
+    if fps_update is not None:
         data["CURR_FPS"] = fps_update
-    if not(volume_update is None):
+    if volume_update is not None:
         data["CURR_VOLUME"] = volume_update
     with open('config/settings.json', 'w') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)

@@ -10,9 +10,21 @@ FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
 
 
 class GameApp:
-
-    def __init__(self, parent=None, player='Natan'):
-        self.fps, self.curr_volume, self.width, self.height, self.min_width, self.min_height = load_settings()
+    def __init__(self, parent=None, player='Natan', *, bet: int):
+        self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
+            self.width, self.height, self.min_width, self.min_height = load_settings()
+        with open("config/lang.json", encoding="utf-8") as lang_file:
+            self.lang_json = json.load(lang_file)
+            lang_json_dict = self.lang_json[self.curr_lang]
+            self.win_title = lang_json_dict["WIN_TITLES"]["GAME"]
+            self.continue_text = lang_json_dict["CONTINUE_BUTTON"]
+            self.back_menu_text = lang_json_dict["BACK_MENU_BUTTON"]
+            self.exit_text = lang_json_dict["EXIT_BUTTON"]
+            self.restart_text = lang_json_dict["RESTART_BUTTON"]
+            self.loading_text = lang_json_dict["LOADING_TEXT"]
+            self.no_button, self.yes_button = lang_json_dict["NO_BUTTON"], lang_json_dict["YES_BUTTON"]
+            self.come_back_text, self.main_menu_text = lang_json_dict["COME_BACK"], lang_json_dict["MAIN_MENU"]
+            self.diff_ind = lang_json_dict["SETTINGS_MENU"]["DIFFICULT"].index(self.curr_diff)
         self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
         if parent is None:
             self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
@@ -118,7 +130,8 @@ class GameApp:
 
     def random_card_search(self):
         if self.card_list:
-            random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1))
+            random_card = self.card_list.pop(random.randint(0, len(self.card_list) - 1)) if self.diff_ind else \
+                self.card_list.pop()
             if self.current_player:
                 self.player_cards.append(random_card)
                 self.cards_sorter()
