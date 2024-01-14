@@ -12,7 +12,6 @@ FACE_DOWN_IMAGE = "cards/cardBack_red2.png"
 
 
 class GameApp:
-
     def __init__(self, parent=None, player='Natan', *, bet: int):
         self.fps, self.curr_fps, self.vol, self.curr_vol, self.diff, self.curr_diff, self.lang, self.curr_lang, \
             self.width, self.height, self.min_width, self.min_height = load_settings()
