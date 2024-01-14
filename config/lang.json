@@ -1,0 +1,33 @@
+{
+  "ENG": {"ENG": "English", "BACK_BUTTON": "BACK", "SAVE_BUTTON": "SAVE", "PLAY_BUTTON": "PLAY", "SETTINGS_BUTTON": "SETTINGS",
+    "SCORE_BUTTON": "SCORE", "EXIT_BUTTON": "EXIT", "CONTINUE_BUTTON": "CONTINUE", "RESTART_BUTTON": "RESTART",
+    "START_BUTTON": "START", "BACK_MENU_BUTTON": "BACK TO MAIN MENU", "LOADING_TEXT": "Game loading...",
+    "NO_BUTTON": "NO", "YES_BUTTON": "YES", "COME_BACK": "COME BACK", "MAIN_MENU": "MAIN MENU",
+    "ASK_RESTART": "Are you sure you want to restart the game?",
+    "SETTINGS_MENU": {"TEXT": "Settings", "FPS": "FPS", "VOLUME": "Vol", "DIFFICULT": ["EASY", "HARDCORE"]},
+    "WIN_MENU": {"WIN_TEXT": "Congratulations! You won", "LOSE_TEXT": "Game over! You lost", "TIE_TEXT": "Game draw!"},
+    "WIN_TITLES": {"GAME": "Card-chests v1.0", "LOADING": "Loading", "SCORE": "Scores"},
+    "BACK_SETT_BUTTON": "Return to original settings"
+  },
+  "RUS": {"RUS": "Русский", "BACK_BUTTON": "НАЗАД", "SAVE_BUTTON": "СОХРАНИТЬ", "PLAY_BUTTON": "ИГРАТЬ",
+    "SETTINGS_BUTTON": "НАСТРОЙКИ", "SCORE_BUTTON": "ОЧКИ", "EXIT_BUTTON": "ВЫЙТИ", "CONTINUE_BUTTON": "ПРОДОЛЖИТЬ",
+    "START_BUTTON": "НАЧАТЬ", "RESTART_BUTTON": "ЗАНОВО", "BACK_MENU_BUTTON": "ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ",
+    "LOADING_TEXT": "Загрузка игры...", "NO_BUTTON": "НЕТ", "YES_BUTTON": "ДА", "COME_BACK": "ВЕРНУТЬСЯ НАЗАД",
+    "MAIN_MENU": "ГЛАВНОЕ МЕНЮ", "ASK_RESTART": "Вы уверены, что хотите перезапустить игру?",
+    "SETTINGS_MENU": {"TEXT": "Настройки", "FPS": "ФПС", "VOLUME": "Зв.", "DIFFICULT": ["ЛЁГКАЯ", "СЛОЖНАЯ"]},
+    "WIN_MENU": {"WIN_TEXT": "Поздравляю! Вы выиграли", "LOSE_TEXT": "Игра окончена! Вы проиграли", "TIE_TEXT": "Ничья!"},
+    "WIN_TITLES": {"GAME": "Сундучки v1.0", "LOADING": "Загрузка", "SCORE": "Очки"},
+    "BACK_SETT_BUTTON": "Вернуться к первоначальным настройкам"
+  },
+  "ES": {"ES": "Español", "BACK_BUTTON": "REGRESAR", "SAVE_BUTTON": "GUARDAR", "PLAY_BUTTON": "JUGAR",
+    "SETTINGS_BUTTON": "AJUSTES", "SCORE_BUTTON": "PUNTOS", "EXIT_BUTTON": "SALIR", "CONTINUE_BUTTON": "CONTINUAR",
+    "START_BUTTON": "INICIAR", "RESTART_BUTTON": "REINICIO", "BACK_MENU_BUTTON": "VOLVER AL MENÚ PRINCIPAL",
+    "LOADING_TEXT": "Cargando el juego...", "NO_BUTTON": "NO", "YES_BUTTON": "SÍ", "COME_BACK": "REGRESAR",
+    "MAIN_MENU": "MENÚ PRINCIPAL", "ASK_RESTART": "¿Estás seguro/a de que quieres reiniciar el juego?",
+    "SETTINGS_MENU": {"TEXT": "Configuraciónes", "FPS": "FPS", "VOLUME": "Vol", "DIFFICULT": ["FÁCIL", "DIFÍCIL"]},
+    "WIN_MENU": {"WIN_TEXT": "¡Felicidades! Ganaste", "LOSE_TEXT": "¡El juego ha terminado! Perdiste", "TIE_TEXT": "¡Empate!"},
+    "WIN_TITLES": {"GAME": "Card-chests v1.0", "LOADING": "Inicializando", "SCORE": "Puntos"},
+    "BACK_SETT_BUTTON": "Volver a la configuración original"
+  },
+  "LANGS": ["English", "Русский", "Español"], "English": "ENG", "Русский": "RUS", "Español": "ES"
+}
