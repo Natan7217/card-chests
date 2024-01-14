@@ -5,7 +5,6 @@ import pygame
 import json
 from typing import Optional, Union
 
-
 pygame.init()
 
 
@@ -20,6 +19,10 @@ def load_image(name, color_key=None) -> Optional[Union[pygame.Surface, None]]:
     if color_key is not None:
         if color_key == -1:
             color_key = image.get_at((0, 0))
+        if color_key == -2:
+            color_key = "white"
+            image.set_colorkey(color_key)
+            image = pygame.transform.flip(image.copy(), True, False)
         image.set_colorkey(color_key)
     else:
         image = image.convert_alpha()
@@ -37,25 +40,32 @@ def load_sound(name) -> Optional[Union[pygame.mixer.Sound, None]]:
         return sound
 
 
-def load_settings() -> tuple[int, int, int, int, int, int]:
+def load_settings() -> tuple[int, int, int, int, str, str, str, str, int, int, int, int]:
     base_screen_width, base_screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-    with open("config/settings.json") as file:
+    with open("config/settings.json", encoding="utf-8") as file:
         file = json.load(file)
-        fps = file["CURR_FPS"]
-        volume = file["CURR_VOLUME"]
+        fps, curr_fps = file["FPS"], file["CURR_FPS"]
+        volume, curr_volume = file["VOLUME"], file["CURR_VOLUME"]
+        dif, curr_dif = file["DIFFICULT"], file["CURR_DIFFICULT"]
+        lang, curr_lang = file["LANGUAGE"], file["CURR_LANGUAGE"]
         screen_width, screen_height = file["SCREEN_WIDTH"], file["SCREEN_HEIGHT"]
         min_width, min_height = file["MIN_WIDTH"], file["MIN_HEIGHT"]
-    return fps, volume, base_screen_width * screen_width, base_screen_height * screen_height, min_width, min_height
+    return (fps, curr_fps, volume, curr_volume, dif, curr_dif, lang, curr_lang, base_screen_width * screen_width,
+            base_screen_height * screen_height, min_width, min_height)
 
 
-def update_settings(fps_update=None, volume_update=None):
-    with open('config/settings.json') as file:
+def update_settings(fps_update=None, volume_update=None, diff_update=None, lang_update=None):
+    with open('config/settings.json', encoding="utf-8") as file:
         data = json.load(file)
     if fps_update is not None:
         data["CURR_FPS"] = fps_update
     if volume_update is not None:
         data["CURR_VOLUME"] = volume_update
-    with open('config/settings.json', 'w') as file:
+    if lang_update is not None:
+        data["CURR_LANGUAGE"] = lang_update
+    if lang_update is not None and diff_update is not None:
+        data["CURR_DIFFICULT"] = diff_update
+    with open('config/settings.json', 'w', encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
@@ -64,6 +74,7 @@ def load_data(queue=''):
         conn = sqlite3.connect('score.sqlite')
         cur = conn.cursor()
         data = cur.execute(queue).fetchall()
+        conn.commit()
         conn.close()
     except Exception as e:
         print(e)
